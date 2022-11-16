@@ -1,10 +1,50 @@
-tbody {
-    border: 0px solid;
-    border-radius: 15px;
+:root {
+    --bg: #1d1d1d;
+    --bg2: #272727;
+    --light: #383838;
+    --dark: #121212;
+    --text: #ff6d6d;
+    --hover: #f83b3b;
+    --border: var(--bg2);
+    --grayed: #505050;
+    --watching: #efff73;
+    --completed: #4aff9e;
+    --onhold: #3d3d3d;
+    --dropped: #fa5a5a;
+    --planned: #5cfff7;
+  
+    --rounding: 15px;
+  }
+
+
+body {
+    background-color: #121212;
 }
-/* wtf */
+
+.mainlist > tbody > tr {
+    background-color: #1d1d1d;
+}
+.mainlist > tbody > tr:nth-child(even) {
+    background-color: #272727;
+}
+
+
+.updatebutton {
+    position: absolute;
+    top: 0;
+    left: 0%;
+}
 
 .sortbutton {
+    background-color: red;
     color: red;
     float: right;
+}
+
+
+.detable > tbody > tr {
+    background-color: #1d1d1d;
+}
+.detable > tbody > tr:nth-child(even) {
+    background-color: #272727;
 }

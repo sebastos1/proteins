@@ -1,22 +1,20 @@
 <% include!("./header.html"); %>
   <body>
-    <input type="button" onclick="location.href='/update';">
+    <a href="/updater" class="updatebutton">update</a>
     <form action="/search">
-        <input type="text" name="search" value="" placeholder="search">
-        <input type="submit" hidden />
+        <input type="text" name="search" value="" placeholder="Search in <%= &sort.len() %> foods">
+        <input type="submit" style="visibility:hidden;height:0%">
     </form>
-        
-    <table>
+    <table class="mainlist">
         <tr>
-            <td>Produkt<input type="button" value="sort" class="sortbutton"></td>
-            <td>Protein %<input type="button" value="sort" class="sortbutton"></td>
-            <td>Karbohydrater %<input type="button" value="sort" class="sortbutton"></td>
-            <td>Fett %<input type="button" value="sort" class="sortbutton"></td>
+            <td>Produkt<input type="button" id="name" value="s" class="sortbutton"></td>
+            <td>Protein %<input type="button" id="prot" value="s" class="sortbutton"></td>
+            <td>Karbohydrater %<input type="button" id="carb" value="s" class="sortbutton"></td>
+            <td>Fett %<input type="button" id="fat" value="s" class="sortbutton"></td>
         </tr>
         <% for k in &sort { %>
-            <tr>
                 <td><a href="/product/<%= k %>"><%= k %></a></td>
-                <% for entry in ["Protein", "Karbohydrater", "Fett"] { %>
+                <% for entry in ["Protein", "Karbohydrater", "Fett"] { %>
                     <% if foods[k].contains_key(entry) { %>
                         <td><%= foods[k][entry] %></td>
                     <% } else { %>

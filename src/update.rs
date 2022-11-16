@@ -13,7 +13,7 @@ pub fn update() {
         macro_rules! insert {
             ($a:expr, $b:expr) => {
                 let string = map["foods"][x][$b]["value"].as_str().unwrap();
-                if string != "0" {
+                if string != "0" && !string.is_empty() {
                     Some(nutrients.insert($a, string))
                 } else {
                     None
@@ -58,11 +58,8 @@ pub fn update() {
         insert!("Vit E", "Vit E");
         insert!("Vann", "Vann");
 
-        println!("lolololol");
-
         foods.insert(map["foods"][x]["name"].as_str().unwrap(), nutrients);
     }
-
     let file = std::fs::File::create("output.json").unwrap();
     serde_json::to_writer(file, &foods).unwrap();
 }

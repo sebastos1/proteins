@@ -1,7 +1,6 @@
 use http::Uri;
 use sailfish::TemplateOnce;
 use std::collections::HashMap;
-use std::sync::Once;
 use std::thread;
 use warp::reply::html;
 use warp::Filter;
@@ -23,6 +22,10 @@ struct More<'a> {
     product: String,
     foods: HashMap<String, HashMap<String, String>>,
 }
+
+#[derive(TemplateOnce)]
+#[template(path = "header.html")]
+struct Header {}
 
 #[tokio::main]
 async fn main() {
@@ -60,34 +63,30 @@ async fn main() {
             }
         });
 
-    let update = warp::path("update").map({
+    let updater = warp::path!("updater").map({
         move || {
-            static START: Once = Once::new();
-            thread::spawn(|| {
-                START.call_once(|| {
-                    update();
-                });
-            })
-            .join()
-            .unwrap();
+            thread::spawn(|| update());
             warp::redirect(Uri::from_static("/"))
         }
     });
 
     // auto format moment
     let order = vec![
-        "Vann",
+        // "kJ", "kcal",
+        // "Protein",
+        // "Karbohydrater",
+        // "Fett",
         "Hvorav mettet",
         "Hvorav enumettet",
         "Hvorav flerumettet",
         "Tilsatt sukker",
-        "Transfett",
-        "Fiber",
-        "Kolesterol",
-        "Stivelse",
+        "Vann",
         "Salt",
+        "Fiber",
+        "Stivelse",
+        "Kolesterol",
         "Omega-3",
-        "Alkohol",
+        "Transfett",
         "Vit A",
         "Vit B1",
         "Vit B2",
@@ -96,6 +95,7 @@ async fn main() {
         "Vit C",
         "Vit D",
         "Vit E",
+        "Alkohol",
     ];
 
     let product = warp::path("product").and(warp::path::param()).map({
@@ -117,6 +117,6 @@ async fn main() {
         }
     });
 
-    let routes = index.or(static_assets).or(product).or(update).or(search);
+    let routes = index.or(static_assets).or(product).or(search).or(updater);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }
