@@ -1,0 +1,10 @@
+tbody {
+    border: 0px solid;
+    border-radius: 15px;
+}
+/* wtf */
+
+.sortbutton {
+    color: red;
+    float: right;
+}

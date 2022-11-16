@@ -1,0 +1,35 @@
+<% include!("./header.html"); %>
+    <body>
+        <h1><%= product %></h1>
+        <table>
+            <tr>
+                <td>kJ / kcal</td>
+                <% if foods[&product].contains_key("kJ") && foods[&product].contains_key("kcal") { %>
+                    <td><%= foods[&product]["kJ"] %> / <%= foods[&product]["kcal"] %></td>
+                <% } else { %>
+                    <td>0 / 0</td>
+                <% } %>
+            </tr>
+
+            <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
+                <tr>
+                    <td><%= item %></td>
+                    <% if foods[&product].contains_key(item) { %>
+                        <td><%= foods[&product][item] %></td>
+                    <% } else { %>
+                        <td>0</td>
+                    <% } %>
+                </tr>
+            <% } %>
+
+            <% for item in order { %>
+                <% if !foods[&product].contains_key(item) { () } else { %>
+                    <tr>
+                        <td><%= item %></td>
+                        <td><%= foods[&product][item] %></td>
+                    </tr>
+                 <% } %>
+            <% } %>
+        </table>
+    </body>
+</html>

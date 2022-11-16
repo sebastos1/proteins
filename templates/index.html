@@ -1,0 +1,30 @@
+<% include!("./header.html"); %>
+  <body>
+    <input type="button" onclick="location.href='/update';">
+    <form action="/search">
+        <input type="text" name="search" value="" placeholder="search">
+        <input type="submit" hidden />
+    </form>
+        
+    <table>
+        <tr>
+            <td>Produkt<input type="button" value="sort" class="sortbutton"></td>
+            <td>Protein %<input type="button" value="sort" class="sortbutton"></td>
+            <td>Karbohydrater %<input type="button" value="sort" class="sortbutton"></td>
+            <td>Fett %<input type="button" value="sort" class="sortbutton"></td>
+        </tr>
+        <% for k in &sort { %>
+            <tr>
+                <td><a href="/product/<%= k %>"><%= k %></a></td>
+                <% for entry in ["Protein", "Karbohydrater", "Fett"] { %>
+                    <% if foods[k].contains_key(entry) { %>
+                        <td><%= foods[k][entry] %></td>
+                    <% } else { %>
+                        <td><%= "0" %></td>
+                    <% } %>
+                <% } %>
+            </tr>
+        <% } %>
+    </table>
+  </body>
+</html>
