@@ -18,6 +18,7 @@ async fn main() {
     keys.sort_by_key(|name| name.to_lowercase());
     let search = Arc::new(Mutex::new(<Vec<String>>::new()));
     let sort = Arc::new(Mutex::new(<Vec<String>>::new()));
+    let sortword = Arc::new(Mutex::new(String::new()));
     // insanely ugly browser quirk bypass:
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
     let x = vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
@@ -56,13 +57,15 @@ async fn main() {
         let search = search.clone();
         let sort = sort.clone();
         let id = id.clone();
+        let sortword = sortword.clone();
         move || {
             let foods = foods.clone();
             let x = x.clone();
             let keys = keys.clone();
             let search = search.lock().unwrap();
-            let mut sort = sort.lock().unwrap();
+            let sort = sort.lock().unwrap();
             let rng = id.lock().unwrap().to_string();
+            let sortword = sortword.lock().unwrap().to_string();
 
             let y: Vec<String> = if !sort.is_empty() {
                 sort.to_vec()
@@ -73,8 +76,7 @@ async fn main() {
                     keys
                 }
             };
-            *sort = Vec::new();
-            html(Index { foods, x, y, rng }.render_once().unwrap())
+            html(Index { foods, x, y, rng, sortword }.render_once().unwrap())
         }
     });
 
@@ -85,12 +87,14 @@ async fn main() {
             let keys = keys.clone();
             let search = search.clone();
             let sort = sort.clone();
+            let sortword = sortword.clone();
             let id = id.clone();
             move |form: Vec<(String, String)>| {
                 let foods = foods.clone();
                 let keys = keys.clone();
                 let search = search.lock().unwrap();
                 let mut sort = sort.lock().unwrap();
+                let mut sortword = sortword.lock().unwrap();
                 let mut collected: Vec<(String, u32)> = Vec::new();
 
                 // flex macro
@@ -111,18 +115,23 @@ async fn main() {
                     };
                 }
 
-                if search.is_empty() {
-                    sort!(keys)
-                } else {
-                    sort!(*search)
-                }
-
-                collected.sort_by(|a, b| b.1.cmp(&a.1));
                 let mut sorted: Vec<String> = Vec::new();
-                for prod in collected {
-                    sorted.push(prod.0)
+                if form[0].1 != sortword.to_string() {
+                    if search.is_empty() {
+                        sort!(keys)
+                    } else {
+                        sort!(*search)
+                    }
+                    collected.sort_by(|a, b| b.1.cmp(&a.1));
+                    for prod in collected {
+                        sorted.push(prod.0)
+                    }
+                } else {
+                    sorted = sort.to_vec();
+                    sorted.reverse();
                 }
                 *sort = sorted.clone();
+                *sortword = form[0].1.clone();
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 warp::redirect(Uri::from_static("/"))
             }

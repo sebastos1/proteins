@@ -6,6 +6,11 @@
         <input type="hidden" name="id" value="<%= rng %>">
         <input type="submit" style="visibility:hidden;height:0%">
     </form>
+    <% if sortword != "" { %>
+        <h3>Sorting by: <%= sortword%></h3>
+    <% } else { %>
+        <h3>Not sorting</h3>
+    <% } %>
     <table class="mainlist">
         <tr>
             <td>Name</td>
@@ -16,7 +21,7 @@
                         <input type="hidden" name="id" value="<%= rng %>">
                         <input type="submit" value="<%= item %>" class="sortbutton">
                     </form>
-                    
+                </td>
             <% } %>
         </tr>
         <% for k in &y { %>

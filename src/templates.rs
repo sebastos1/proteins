@@ -8,6 +8,7 @@ pub struct Index<'a> {
     pub x: Vec<&'a str>,
     pub y: Vec<String>,
     pub rng: String,
+    pub sortword: String,
 }
 
 #[derive(TemplateOnce)]
