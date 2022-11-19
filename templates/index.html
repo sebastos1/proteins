@@ -2,21 +2,26 @@
   <body>
     <a href="/updater" class="updatebutton">update</a>
     <form action="/search">
-        <input type="text" name="search" value="" placeholder="Search in <%= &sort.len() %> foods">
+        <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
         <input type="submit" style="visibility:hidden;height:0%">
     </form>
     <table class="mainlist">
         <tr>
-            <td>Produkt<input type="button" id="name" value="s" class="sortbutton"></td>
-            <td>Protein %<input type="button" id="prot" value="s" class="sortbutton"></td>
-            <td>Karbohydrater %<input type="button" id="carb" value="s" class="sortbutton"></td>
-            <td>Fett %<input type="button" id="fat" value="s" class="sortbutton"></td>
+            <td>Name</td>
+            <% for item in &x { %>
+                <td><%= item %>
+                    
+                    <form action="/sort" >
+                        <button name="sort" value="<%= item %>" class="sortbutton">Sort</button>
+                    </form>
+                    
+            <% } %>
         </tr>
-        <% for k in &sort { %>
+        <% for k in &y { %>
                 <td><a href="/product/<%= k %>"><%= k %></a></td>
-                <% for entry in ["Protein", "Karbohydrater", "Fett"] { %>
-                    <% if foods[k].contains_key(entry) { %>
-                        <td><%= foods[k][entry] %></td>
+                <% for entry in &x { %>
+                    <% if foods[k].contains_key(&entry.to_string()) { %>
+                        <td><%= foods[k][&entry.to_string()] %></td>
                     <% } else { %>
                         <td><%= "0" %></td>
                     <% } %>
