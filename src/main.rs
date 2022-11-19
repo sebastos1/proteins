@@ -63,17 +63,16 @@ async fn main() {
             let search = search.lock().unwrap();
             let mut sort = sort.lock().unwrap();
             let rng = id.lock().unwrap().to_string();
-            let mut y = Vec::new();
 
-            if !sort.is_empty() {
-                y = sort.to_vec()
+            let y: Vec<String> = if !sort.is_empty() {
+                sort.to_vec()
             } else {
                 if !search.is_empty() {
-                    y = search.to_vec()
+                    search.to_vec()
                 } else {
-                    y = keys
+                    keys
                 }
-            }
+            };
             *sort = Vec::new();
             html(Index { foods, x, y, rng }.render_once().unwrap())
         }
