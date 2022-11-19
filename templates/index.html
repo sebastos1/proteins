@@ -3,16 +3,18 @@
     <a href="/updater" class="updatebutton">update</a>
     <form action="/search">
         <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
+        <input type="hidden" name="id" value="<%= rng %>">
         <input type="submit" style="visibility:hidden;height:0%">
     </form>
     <table class="mainlist">
         <tr>
             <td>Name</td>
             <% for item in &x { %>
-                <td><%= item %>
-                    
+                <td>
                     <form action="/sort" >
-                        <button name="sort" value="<%= item %>" class="sortbutton">Sort</button>
+                        <input type="hidden" name="sortby" value="<%= item %>">
+                        <input type="hidden" name="id" value="<%= rng %>">
+                        <input type="submit" value="<%= item %>" class="sortbutton">
                     </form>
                     
             <% } %>

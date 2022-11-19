@@ -13,3 +13,4 @@ tokio = { version = "1", features = ["full"] }
 http = "0.2.8"
 urlencoding = "2.1.2"
 anyhow = "1.0.66"
+rand = "0.8.5"

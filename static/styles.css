@@ -26,7 +26,6 @@ body {
     background-color: #272727;
 }
 
-
 .updatebutton {
     position: absolute;
     top: 0;
@@ -34,11 +33,8 @@ body {
 }
 
 .sortbutton {
-    background-color: red;
-    color: red;
-    float: right;
+    background-color: #121212;
 }
-
 
 .detable > tbody > tr {
     background-color: #1d1d1d;
