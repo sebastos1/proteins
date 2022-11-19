@@ -76,23 +76,21 @@ async fn main() {
             let foods = foods.clone();
             let keys = keys.clone();
             let x = x.clone();
-            let search = search.lock().unwrap();
-            let sort = sort.lock().unwrap();
+            let mut search = search.lock().unwrap();
+            let mut sort = sort.lock().unwrap();
             let mut y = Vec::new();
 
-            if !search.is_empty() {
-                if !sort.is_empty() {
-                    y = sort.to_vec()
-                } else {
-                    y = search.to_vec()
-                }
+            if !sort.is_empty() {
+                y = sort.to_vec()
             } else {
-                if !sort.is_empty() {
-                    y = sort.to_vec()
+                if !search.is_empty() {
+                    y = search.to_vec()
                 } else {
                     y = keys
                 }
             }
+
+            *sort = Vec::new();
             html(Index { foods, x, y }.render_once().unwrap())
         }
     });
@@ -163,7 +161,6 @@ async fn main() {
                     }
                 }
                 *search = sort.clone();
-
                 warp::redirect(Uri::from_static("/"))
             }
         });
