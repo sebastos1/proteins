@@ -8,7 +8,7 @@ use warp::reply::html;
 use sailfish::TemplateOnce;
 use std::collections::HashMap;
 mod update;use update::update;
-mod templates;use crate::templates::{Index, More};
+mod templates;use crate::templates::*;
 
 #[tokio::main]
 async fn main() {
@@ -22,33 +22,7 @@ async fn main() {
     // insanely ugly browser quirk bypass:
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
     let x = vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
-    let order = vec![
-        // "kJ", commented are hard coded in more.html
-        // "kcal",
-        // "Protein",
-        // "Karbohydrater",
-        // "Fett",
-        "Hvorav mettet",
-        "Hvorav enumettet",
-        "Hvorav flerumettet",
-        "Tilsatt sukker",
-        "Vann",
-        "Salt",
-        "Fiber",
-        "Stivelse",
-        "Kolesterol",
-        "Omega-3",
-        "Transfett",
-        "Vit A",
-        "Vit B1",
-        "Vit B2",
-        "Vit B6",
-        "Vit B12",
-        "Vit C",
-        "Vit D",
-        "Vit E",
-        "Alkohol",
-    ];
+    let order = order();
 
     let index = warp::path!().map({
         let foods = foods.clone();
@@ -63,7 +37,7 @@ async fn main() {
             let x = x.clone();
             let keys = keys.clone();
             let search = search.lock().unwrap();
-            let sort = sort.lock().unwrap();
+            let mut sort = sort.lock().unwrap();
             let rng = id.lock().unwrap().to_string();
             let sortword = sortword.lock().unwrap().to_string();
 
@@ -76,6 +50,7 @@ async fn main() {
                     keys
                 }
             };
+            *sort = Vec::new();
             html(Index { foods, x, y, rng, sortword }.render_once().unwrap())
         }
     });
@@ -116,22 +91,24 @@ async fn main() {
                 }
 
                 let mut sorted: Vec<String> = Vec::new();
-                if form[0].1 != sortword.to_string() {
-                    if search.is_empty() {
-                        sort!(keys)
-                    } else {
-                        sort!(*search)
-                    }
-                    collected.sort_by(|a, b| b.1.cmp(&a.1));
-                    for prod in collected {
-                        sorted.push(prod.0)
-                    }
+                if search.is_empty() {
+                    sort!(keys)
                 } else {
-                    sorted = sort.to_vec();
-                    sorted.reverse();
+                    sort!(*search)
+                }
+
+                if form[0].1 != sortword.to_string() {
+                    collected.sort_by(|a, b| b.1.cmp(&a.1));
+                    *sortword = form[0].1.clone();
+                } else {
+                    collected.sort_by(|a, b| a.1.cmp(&b.1));
+                    *sortword = format!("{} (desc.)", form[0].1.clone());
+                }
+
+                for prod in collected {
+                    sorted.push(prod.0)
                 }
                 *sort = sorted.clone();
-                *sortword = form[0].1.clone();
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 warp::redirect(Uri::from_static("/"))
             }
@@ -165,31 +142,18 @@ async fn main() {
             let order = order.clone();
             let product = urlencoding::decode(&product).unwrap().to_string();
             let foods = foods.clone();
-            html(
-                More {
-                    order,
-                    product,
-                    foods,
-                }
-                .render_once()
-                .unwrap(),
-            )
+            html(More { order, product, foods }.render_once().unwrap())
         }
     });
 
     let updater = warp::path!("updater").map({
         || {
-            thread::spawn(|| update());
+            thread::spawn(|| update()).join().unwrap();
             warp::redirect(Uri::from_static("/"))
         }
     });
 
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
-    let routes = index
-        .or(static_assets)
-        .or(product)
-        .or(search)
-        .or(updater)
-        .or(sort);
+    let routes = index.or(static_assets).or(product).or(search).or(sort).or(updater);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }
