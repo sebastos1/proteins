@@ -19,6 +19,12 @@ pub struct More<'a> {
     pub foods: HashMap<String, HashMap<String, String>>,
 }
 
+#[derive(TemplateOnce)]
+#[template(path = "custom.html")]
+pub struct Custom {
+    pub rng: String,
+}
+
 pub fn order<'a>() -> Vec<&'a str> {
     return vec![
         // "kJ", commented are hard coded in more.html

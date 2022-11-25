@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 pub fn update() {
     let url = std::fs::read_to_string("link.txt").unwrap();
+    let source = url.clone();
     let res = reqwest::blocking::get(url).unwrap().text().unwrap();
     let map: HashMap<String, Value> = serde_json::from_str(&res).unwrap();
     let mut foods = HashMap::new();
@@ -57,7 +58,8 @@ pub fn update() {
         insert!("Vit D", "Vit D");
         insert!("Vit E", "Vit E");
         insert!("Vann", "Vann");
-
+        nutrients.insert("Source", &source);
+        
         foods.insert(map["foods"][x]["name"].as_str().unwrap(), nutrients);
     }
     let file = std::fs::File::create("output.json").unwrap();

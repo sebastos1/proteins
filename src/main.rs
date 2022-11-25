@@ -12,8 +12,15 @@ mod templates;use crate::templates::*;
 
 #[tokio::main]
 async fn main() {
-    let foods: HashMap<String, HashMap<String, String>> =
+    let mut foods: HashMap<String, HashMap<String, String>> =
         serde_json::from_str(&std::fs::read_to_string("output.json").unwrap()).unwrap();
+    if std::path::Path::new("custom.json").exists() {
+        let custom_foods: HashMap<String, HashMap<String, String>> =
+        serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
+        for (k, v) in custom_foods.iter() {
+            foods.insert(k.to_string(), v.clone());
+        }
+    }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
     keys.sort_by_key(|name| name.to_lowercase());
     let search = Arc::new(Mutex::new(<Vec<String>>::new()));
@@ -117,9 +124,11 @@ async fn main() {
     let search = warp::path!("search")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
+            let id = id.clone();
             let keys = keys.clone();
             let search = search.clone();
             move |form: Vec<(String, String)>| {
+                let id = id.clone();
                 let keys = keys.clone();
                 let mut search = search.lock().unwrap();
 
@@ -149,11 +158,52 @@ async fn main() {
     let updater = warp::path!("updater").map({
         || {
             thread::spawn(|| update()).join().unwrap();
+            println!("updated");
             warp::redirect(Uri::from_static("/"))
         }
     });
 
+    let custom = warp::path!("custom").map({
+        let id = id.clone();
+        move || {
+            let rng = id.lock().unwrap().to_string();
+            html(Custom { rng }.render_once().unwrap())
+        }
+    });
+
+    let insert = warp::path!("insert")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let id = id.clone();
+            move |form: Vec<(String, String)>| {
+                let id = id.clone();
+
+                let mut nutrients = HashMap::new();
+                for (k, v) in &form[1..] {
+                    nutrients.insert(k.to_string(), v.to_string());
+                }
+
+                if !std::path::Path::new("custom.json").exists() {
+                    let mut food = HashMap::new();
+                    food.insert(&form[0].1, nutrients);
+
+                    let file = std::fs::File::create("custom.json").unwrap();
+                    serde_json::to_writer(file, &food).unwrap();
+                } else {
+                    let content = std::fs::read_to_string("custom.json").unwrap();
+                    let mut foods: HashMap<String, HashMap<String, String>> = serde_json::from_str(&content).unwrap();
+                    foods.insert(form[0].1.to_string(), nutrients);
+
+                    let file = std::fs::File::create("custom.json").unwrap();
+                    serde_json::to_writer(file, &foods).unwrap();
+                }                
+
+                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
-    let routes = index.or(static_assets).or(product).or(search).or(sort).or(updater);
+    let routes = index.or(static_assets).or(product).or(search).or(sort).or(updater).or(custom).or(insert);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

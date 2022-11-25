@@ -1,6 +1,7 @@
 <% include!("./header.html"); %>
   <body>
     <a href="/updater" class="updatebutton">update</a>
+    <a href="/custom">custom product</a>
     <form action="/search">
         <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
         <input type="hidden" name="id" value="<%= rng %>">
