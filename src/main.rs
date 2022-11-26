@@ -74,7 +74,7 @@ async fn main() {
                     rng,
                     sortword,
                     ind,
-                    entries
+                    entries,
                 }
                 .render_once()
                 .unwrap(),
@@ -98,7 +98,6 @@ async fn main() {
                 warp::redirect(Uri::from_static("/"))
             }
         });
-
 
     let sort = warp::path!("sort")
         .and(warp::query::<Vec<(String, String)>>())
@@ -221,8 +220,12 @@ async fn main() {
             move |form: Vec<(String, String)>| {
                 let mut nutrients = HashMap::new();
                 for (k, v) in &form[1..] {
-                    nutrients.insert(k.to_string(), v.to_string());
+                    nutrients.insert(k.to_string(), format!("{:.1}", v.parse::<f32>().unwrap()));
                 }
+                nutrients.insert(
+                    "kJ".to_string(),
+                    format!("{:.1}", form[1].1.parse::<f32>().unwrap() * 4.2),
+                );
 
                 if !std::path::Path::new("custom.json").exists() {
                     let mut food = HashMap::new();
@@ -279,14 +282,7 @@ async fn main() {
         move || {
             let foods = foods.clone();
             let paperitems = paperitems.lock().unwrap().to_vec();
-            html(
-                Paper {
-                    foods,
-                    paperitems
-                }
-                .render_once()
-                .unwrap(),
-            )
+            html(Paper { foods, paperitems }.render_once().unwrap())
         }
     });
 
@@ -321,9 +317,18 @@ async fn main() {
             }
         });
 
-
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
-    let routes = index.or(static_assets).or(product).or(search).or(sort)
-        .or(updater).or(custom).or(insert).or(amount).or(add).or(paper).or(change);
+    let routes = index
+        .or(static_assets)
+        .or(product)
+        .or(search)
+        .or(sort)
+        .or(updater)
+        .or(custom)
+        .or(insert)
+        .or(amount)
+        .or(add)
+        .or(paper)
+        .or(change);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

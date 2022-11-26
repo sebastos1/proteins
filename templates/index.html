@@ -30,7 +30,9 @@
         <% let end: usize; %>
         <% let ind = ind; %>
 
-        <% if ind >= y.len()-entries { %>
+        <% if y.len() < entries { %>
+            <% end = y.len(); %>
+        <% } else if ind >= y.len()-entries { %>
             <% end = y.len(); %>
         <% } else { %>
             <% end = ind + entries; %>
@@ -55,7 +57,7 @@
             <input type="submit" value="Prev page" class="sortbutton">
         </form>
     <% } %>
-    <% if ind < y.len()-entries { %>
+    <% if y.len() > entries && ind < y.len()-entries { %>
         <form action="/change" >
             <input type="hidden" name="goto" value="up">
             <input type="hidden" name="id" value="<%= rng %>">
