@@ -9,6 +9,8 @@ pub struct Index<'a> {
     pub y: Vec<String>,
     pub rng: String,
     pub sortword: String,
+    pub ind: usize,
+    pub entries: usize,
 }
 
 #[derive(TemplateOnce)]
@@ -18,6 +20,13 @@ pub struct More<'a> {
     pub product: String,
     pub foods: HashMap<String, HashMap<String, String>>,
     pub multiplier: f32,
+}
+
+#[derive(TemplateOnce)]
+#[template(path = "paper.html")]
+pub struct Paper {
+    pub foods: HashMap<String, HashMap<String, String>>,
+    pub paperitems: Vec<(String, f32)>,
 }
 
 #[derive(TemplateOnce)]

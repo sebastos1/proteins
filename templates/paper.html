@@ -1,0 +1,58 @@
+<% include!("./header.html"); %>
+    <body>
+        <a href="/">Table</a>
+        <% if paperitems.is_empty() { %>
+            <p>Nothing to show yet</p>
+        <% } else { %>
+            <table>
+            <tr>
+                <th>Name</th>
+                <th>Energy</th>
+                <th>Proteins</th>
+                <th>Carbs</th>
+                <th>Fat</th>
+            </tr>
+            <% for (product, multiplier) in &paperitems { %>
+                <tr>
+                        <td><%= product %></td>
+                    <% if foods[product].contains_key("kJ") && foods[product].contains_key("kcal") { %>
+                        <td><%= format!("{:.1} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %> / <%= format!("{:.1} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                    <% } else { %>
+                        <td>0 kJ / 0 kcal</td>
+                    <% } %>
+
+                    <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
+                    <% if foods[product].contains_key(item) { %>
+                        <td><%= format!("{:.1} g", foods[product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                    <% } else { %>
+                        <td>0 g</td>
+                    <% } %>
+                    <% } %>
+                </tr>
+            <% } %>
+            
+            <tfoot>
+                <td>Total</td>
+
+                <td>
+                <% let mut kj: f32 = 0.; %>
+                <% let mut kcal: f32 = 0.; %>
+                <% for (product, multiplier) in &paperitems { %>
+                    <% kj = kj + foods[&product.to_string()]["kJ"].parse::<f32>().unwrap() * multiplier; %>
+                    <% kcal = kcal + foods[&product.to_string()]["kcal"].parse::<f32>().unwrap() * multiplier; %>
+                <% } %>
+                <%= format!("{} kJ / {} kcal", kj, kcal) %>
+                </td>
+
+                <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
+                    <% let mut sum: f32 = 0.; %>
+                    <% for (product, multiplier) in &paperitems { %>
+                        <% sum = sum + foods[&product.to_string()][item].parse::<f32>().unwrap() * multiplier; %>
+                    <% } %>
+                    <td><%= sum %></td>
+                <% } %>
+            </tfoot>
+            </table>
+        <% } %>
+    </body>
+</html>

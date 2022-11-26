@@ -2,6 +2,16 @@
     <body>
         <a href="/">Back to main table</a>
         <h1><%= product %></h1>
+        <form action="/amount">
+            <input type="hidden" name="product" value="<%= product %>">
+            <input type="number" name="amount" value="" placeholder="Custom grams">
+            <input type="submit" style="visibility:hidden;height:0%">
+        </form>
+        <form action="/add">
+            <input type="hidden" name="product" value="<%= product %>">
+            <input type="hidden" name="amount" value="<%= multiplier %>">
+            <input type="submit" value="Add to list">
+        </form>
         <table class="detable">
             <tr>
                 <td>kJ / kcal</td>
@@ -32,11 +42,5 @@
                  <% } %>
             <% } %>
         </table>
-
-        <form action="/amount">
-            <input type="hidden" name="id" value="<%= product %>">
-            <input type="number" name="amount" value="" placeholder="Custom grams">
-            <input type="submit" style="visibility:hidden;height:0%">
-        </form>
     </body>
 </html>

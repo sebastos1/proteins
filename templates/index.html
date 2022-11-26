@@ -2,6 +2,7 @@
   <body>
     <a href="/updater" class="updatebutton">update</a>
     <a href="/custom">custom product</a>
+    <a href="/paper">custom list</a>
     <form action="/search">
         <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
         <input type="hidden" name="id" value="<%= rng %>">
@@ -25,7 +26,17 @@
                 </td>
             <% } %>
         </tr>
-        <% for k in &y { %>
+
+        <% let end: usize; %>
+        <% let ind = ind; %>
+
+        <% if ind >= y.len()-entries { %>
+            <% end = y.len(); %>
+        <% } else { %>
+            <% end = ind + entries; %>
+        <% } %>
+
+        <% for k in &y[ind..end] { %>
                 <td><a href="/product/<%= k %>"><%= k %></a></td>
                 <% for entry in &x { %>
                     <% if foods[k].contains_key(&entry.to_string()) { %>
@@ -37,5 +48,20 @@
             </tr>
         <% } %>
     </table>
+    <% if ind >= entries { %>
+        <form action="/change" >
+            <input type="hidden" name="goto" value="down">
+            <input type="hidden" name="id" value="<%= rng %>">
+            <input type="submit" value="Prev page" class="sortbutton">
+        </form>
+    <% } %>
+    <% if ind < y.len()-entries { %>
+        <form action="/change" >
+            <input type="hidden" name="goto" value="up">
+            <input type="hidden" name="id" value="<%= rng %>">
+            <input type="submit" value="Next page" class="sortbutton">
+        </form>
+    <% } %>
+    
   </body>
 </html>
