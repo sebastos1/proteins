@@ -178,7 +178,6 @@ async fn main() {
     let updater = warp::path!("updater").map({
         || {
             thread::spawn(|| update()).join().unwrap();
-            println!("updated");
             warp::redirect(Uri::from_static("/"))
         }
     });
@@ -228,7 +227,6 @@ async fn main() {
                 let foods = foods.clone();
                 let id = id.clone();
                 let product = &form[0].1;
-                println!("{:.?}", form);
 
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 html(

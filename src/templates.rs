@@ -14,7 +14,7 @@ pub struct Index<'a> {
 #[derive(TemplateOnce)]
 #[template(path = "more.html")]
 pub struct More<'a> {
-    pub order: Vec<&'a str>,
+    pub order: Vec<(&'a str, &'a str)>,
     pub product: String,
     pub foods: HashMap<String, HashMap<String, String>>,
     pub multiplier: f32,
@@ -24,32 +24,27 @@ pub struct More<'a> {
 #[template(path = "custom.html")]
 pub struct Custom {}
 
-pub fn order<'a>() -> Vec<&'a str> {
+pub fn order<'a>() -> Vec<(&'a str, &'a str)> {
     return vec![
-        // "kJ", commented are hard coded in more.html
-        // "kcal",
-        // "Protein",
-        // "Karbohydrater",
-        // "Fett",
-        "Hvorav mettet",
-        "Hvorav enumettet",
-        "Hvorav flerumettet",
-        "Tilsatt sukker",
-        "Vann",
-        "Salt",
-        "Fiber",
-        "Stivelse",
-        "Kolesterol",
-        "Omega-3",
-        "Transfett",
-        "Vit A",
-        "Vit B1",
-        "Vit B2",
-        "Vit B6",
-        "Vit B12",
-        "Vit C",
-        "Vit D",
-        "Vit E",
-        "Alkohol",
+        ("Hvorav mettet", "g"),
+        ("Hvorav enumettet", "g"),
+        ("Hvorav flerumettet", "g"),
+        ("Tilsatt sukker", "g"),
+        ("Vann", "g"),
+        ("Salt", "g"),
+        ("Fiber", "g"),
+        ("Stivelse", "g"),
+        ("Kolesterol", "mg"),
+        ("Omega-3", "g"),
+        ("Transfett", "g"),
+        ("Vit A", "µg-RE"),
+        ("Vit B1", "mg"),
+        ("Vit B2", "mg"),
+        ("Vit B6", "mg"),
+        ("Vit B12", "µg"),
+        ("Vit C", "mg"),
+        ("Vit D", "µg"),
+        ("Vit E", "mg-ATE"),
+        ("Alkohol", "g"),
     ];
 }

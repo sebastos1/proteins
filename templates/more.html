@@ -1,13 +1,14 @@
 <% include!("./header.html"); %>
     <body>
+        <a href="/">Back to main table</a>
         <h1><%= product %></h1>
         <table class="detable">
             <tr>
                 <td>kJ / kcal</td>
                 <% if foods[&product].contains_key("kJ") && foods[&product].contains_key("kcal") { %>
-                    <td><%= format!("{:.1}", foods[&product]["kJ"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %> / <%= format!("{:.1}", foods[&product]["kcal"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                    <td><%= format!("{:.1} kJ", foods[&product]["kJ"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %> / <%= format!("{:.1} kcal", foods[&product]["kcal"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                 <% } else { %>
-                    <td>0 / 0</td>
+                    <td>0 kJ / 0 kcal</td>
                 <% } %>
             </tr>
 
@@ -15,23 +16,22 @@
                 <tr>
                     <td><%= item %></td>
                     <% if foods[&product].contains_key(item) { %>
-                        <td><%= format!("{:.1}", foods[&product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                        <td><%= format!("{:.1} g", foods[&product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                     <% } else { %>
-                        <td>0</td>
+                        <td>0 g</td>
                     <% } %>
                 </tr>
             <% } %>
 
-            <% for item in order { %>
+            <% for (item, unit) in order { %>
                 <% if !foods[&product].contains_key(item) { () } else { %>
                     <tr>
                         <td><%= item %></td>
-                        <td><%= format!("{:.1}", foods[&product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                        <td><%= format!("{:.1} {}", foods[&product][item].parse::<f32>().unwrap() * multiplier, unit).replace(".0", "") %></td>
                     </tr>
                  <% } %>
             <% } %>
         </table>
-
 
         <form action="/amount">
             <input type="hidden" name="id" value="<%= product %>">
