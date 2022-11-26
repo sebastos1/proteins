@@ -5,7 +5,7 @@
             <tr>
                 <td>kJ / kcal</td>
                 <% if foods[&product].contains_key("kJ") && foods[&product].contains_key("kcal") { %>
-                    <td><%= foods[&product]["kJ"] %> / <%= foods[&product]["kcal"] %></td>
+                    <td><%= format!("{:.1}", foods[&product]["kJ"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %> / <%= format!("{:.1}", foods[&product]["kcal"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                 <% } else { %>
                     <td>0 / 0</td>
                 <% } %>
@@ -15,7 +15,7 @@
                 <tr>
                     <td><%= item %></td>
                     <% if foods[&product].contains_key(item) { %>
-                        <td><%= foods[&product][item] %></td>
+                        <td><%= format!("{:.1}", foods[&product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                     <% } else { %>
                         <td>0</td>
                     <% } %>
@@ -26,10 +26,17 @@
                 <% if !foods[&product].contains_key(item) { () } else { %>
                     <tr>
                         <td><%= item %></td>
-                        <td><%= foods[&product][item] %></td>
+                        <td><%= format!("{:.1}", foods[&product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                     </tr>
                  <% } %>
             <% } %>
         </table>
+
+
+        <form action="/amount">
+            <input type="hidden" name="id" value="<%= product %>">
+            <input type="number" name="amount" value="" placeholder="Custom grams">
+            <input type="submit" style="visibility:hidden;height:0%">
+        </form>
     </body>
 </html>

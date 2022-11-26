@@ -17,13 +17,12 @@ pub struct More<'a> {
     pub order: Vec<&'a str>,
     pub product: String,
     pub foods: HashMap<String, HashMap<String, String>>,
+    pub multiplier: f32,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
-pub struct Custom {
-    pub rng: String,
-}
+pub struct Custom {}
 
 pub fn order<'a>() -> Vec<&'a str> {
     return vec![

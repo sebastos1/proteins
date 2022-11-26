@@ -16,7 +16,7 @@ async fn main() {
         serde_json::from_str(&std::fs::read_to_string("output.json").unwrap()).unwrap();
     if std::path::Path::new("custom.json").exists() {
         let custom_foods: HashMap<String, HashMap<String, String>> =
-        serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
+            serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
         for (k, v) in custom_foods.iter() {
             foods.insert(k.to_string(), v.clone());
         }
@@ -58,7 +58,17 @@ async fn main() {
                 }
             };
             *sort = Vec::new();
-            html(Index { foods, x, y, rng, sortword }.render_once().unwrap())
+            html(
+                Index {
+                    foods,
+                    x,
+                    y,
+                    rng,
+                    sortword,
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -151,7 +161,17 @@ async fn main() {
             let order = order.clone();
             let product = urlencoding::decode(&product).unwrap().to_string();
             let foods = foods.clone();
-            html(More { order, product, foods }.render_once().unwrap())
+            let multiplier = 1.0;
+            html(
+                More {
+                    order,
+                    product,
+                    foods,
+                    multiplier
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -164,20 +184,15 @@ async fn main() {
     });
 
     let custom = warp::path!("custom").map({
-        let id = id.clone();
         move || {
-            let rng = id.lock().unwrap().to_string();
-            html(Custom { rng }.render_once().unwrap())
+            html(Custom {}.render_once().unwrap())
         }
     });
 
     let insert = warp::path!("insert")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
-            let id = id.clone();
             move |form: Vec<(String, String)>| {
-                let id = id.clone();
-
                 let mut nutrients = HashMap::new();
                 for (k, v) in &form[1..] {
                     nutrients.insert(k.to_string(), v.to_string());
@@ -191,19 +206,53 @@ async fn main() {
                     serde_json::to_writer(file, &food).unwrap();
                 } else {
                     let content = std::fs::read_to_string("custom.json").unwrap();
-                    let mut foods: HashMap<String, HashMap<String, String>> = serde_json::from_str(&content).unwrap();
+                    let mut foods: HashMap<String, HashMap<String, String>> =
+                        serde_json::from_str(&content).unwrap();
                     foods.insert(form[0].1.to_string(), nutrients);
 
                     let file = std::fs::File::create("custom.json").unwrap();
                     serde_json::to_writer(file, &foods).unwrap();
-                }                
-
-                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                }
                 warp::redirect(Uri::from_static("/"))
             }
         });
 
+    let amount = warp::path!("amount")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let order = order.clone();
+            let foods = foods.clone();
+            let id = id.clone();
+            move |form: Vec<(String, String)>| {
+                let order = order.clone();
+                let foods = foods.clone();
+                let id = id.clone();
+                let product = &form[0].1;
+                println!("{:.?}", form);
+
+                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                html(
+                    More {
+                        order,
+                        product: product.to_string(),
+                        foods,
+                        multiplier: form[1].1.parse::<f32>().unwrap() / 100.
+                    }
+                    .render_once()
+                    .unwrap(),
+                )
+            }
+        });
+
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
-    let routes = index.or(static_assets).or(product).or(search).or(sort).or(updater).or(custom).or(insert);
+    let routes = index
+        .or(static_assets)
+        .or(product)
+        .or(search)
+        .or(sort)
+        .or(updater)
+        .or(custom)
+        .or(insert)
+        .or(amount);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }
