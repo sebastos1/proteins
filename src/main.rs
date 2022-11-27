@@ -15,7 +15,7 @@ async fn main() {
     let mut foods: HashMap<String, HashMap<String, String>> =
         serde_json::from_str(&std::fs::read_to_string("output.json").unwrap()).unwrap();
     if std::path::Path::new("custom.json").exists()
-        && &std::fs::read_to_string("output.json").unwrap() != ""
+        && &std::fs::read_to_string("custom.json").unwrap() != ""
     {
         let custom_foods: HashMap<String, HashMap<String, String>> =
             serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
@@ -224,53 +224,6 @@ async fn main() {
         }
     });
 
-    let updater = warp::path!("updater").map({
-        || {
-            thread::spawn(|| update()).join().unwrap();
-            warp::redirect(Uri::from_static("/"))
-        }
-    });
-
-    let custom = warp::path!("custom").map(move || html(Custom {}.render_once().unwrap()));
-
-    let insert = warp::path!("insert")
-        .and(warp::query::<Vec<(String, String)>>())
-        .map({
-            move |form: Vec<(String, String)>| {
-                let mut nutrients = HashMap::new();
-                for (k, v) in &form[1..] {
-                    nutrients.insert(k.to_string(), format!("{:.1}", v.parse::<f32>().unwrap()));
-                }
-                nutrients.insert(
-                    "kJ".to_string(),
-                    format!("{:.1}", form[1].1.parse::<f32>().unwrap() * 4.2),
-                );
-                nutrients.insert("Source".to_string(), "custom".to_string());
-
-                if !std::path::Path::new("custom.json").exists() {
-                    let mut food = HashMap::new();
-                    food.insert(&form[0].1, nutrients);
-                    let file = std::fs::File::create("custom.json").unwrap();
-                    serde_json::to_writer(file, &food).unwrap();
-                } else {
-                    let content = std::fs::read_to_string("custom.json").unwrap();
-                    if content != "" {
-                        let mut food: HashMap<String, HashMap<String, String>> =
-                            serde_json::from_str(&content).unwrap();
-                        food.insert(form[0].1.to_string(), nutrients);
-                        let file = std::fs::File::create("custom.json").unwrap();
-                        serde_json::to_writer(file, &food).unwrap();
-                    } else {
-                        let mut food = HashMap::new();
-                        food.insert(form[0].1.to_string(), nutrients);
-                        let file = std::fs::File::create("custom.json").unwrap();
-                        serde_json::to_writer(file, &food).unwrap();
-                    }
-                }
-                warp::redirect(Uri::from_static("/"))
-            }
-        });
-
     let amount = warp::path!("amount")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
@@ -313,47 +266,91 @@ async fn main() {
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let id = id.clone();
-            let order = order.clone();
-            let foods = foods.clone();
             let paperitems = paperitems.clone();
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-                
-                let product = &form[0].1;
                 let multiplier = form[1].1.parse::<f32>().unwrap();
-
                 let mut paperitems = paperitems.lock().unwrap();
-                let iterator = paperitems.clone();
 
                 if paperitems.is_empty() {
-                    paperitems.push((product.to_string(), multiplier));
+                    paperitems.push((form[0].1.clone(), multiplier));
                 } else {
                     let mut contains = false;
-                    for (i, (prod, mul)) in iterator.iter().enumerate() {
-                        if prod == product {
+                    for (i, (prod, mul)) in paperitems.clone().iter().enumerate() {
+                        if prod == &form[0].1 {
                             paperitems[i].1 = mul + multiplier;
                             contains = true;
                         }
                     }
                     if contains == false {
-                        paperitems.push((product.to_string(), multiplier));
+                        paperitems.push((form[0].1.clone(), multiplier));
                     }
                 }
-                
-
-                html(
-                    More {
-                        order: order.clone(),
-                        foods: foods.clone(),
-                        product: product.to_string(),
-                        multiplier,
-                    }
-                    .render_once()
-                    .unwrap(),
-                )
+                warp::redirect(Uri::from_static("/"))
             }
         });
 
+    let remove = warp::path!("remove")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let id = id.clone();
+            let paperitems = paperitems.clone();
+            move |form: Vec<(String, String)>| {
+                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                let mut paperitems = paperitems.lock().unwrap();
+                paperitems.retain(|item| item.0 != form[0].1);
+                warp::redirect(Uri::from_static("/paper"))
+            }
+        });
+
+    let clear = warp::path!("clear").map({
+        let paperitems = paperitems.clone();
+        move || {
+            *paperitems.lock().unwrap() = <Vec<(String, f32)>>::new();
+            warp::redirect(Uri::from_static("/paper"))
+        }
+    });
+
+    let custom = warp::path!("custom").map(move || html(Custom {}.render_once().unwrap()));
+
+    let insert = warp::path!("insert")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            move |form: Vec<(String, String)>| {
+                let mut nutrients = HashMap::new();
+                for (k, v) in &form[1..] {
+                    nutrients.insert(k.to_string(), format!("{:.1}", v.parse::<f32>().unwrap()));
+                }
+                nutrients.insert("Source".to_string(), "custom".to_string());
+                nutrients.insert(
+                    "kJ".to_string(),
+                    format!("{:.1}", form[1].1.parse::<f32>().unwrap() * 4.2),
+                );
+
+                if std::path::Path::new("custom.json").exists()
+                    && std::fs::read_to_string("custom.json").unwrap() != ""
+                {
+                    let mut food: HashMap<String, HashMap<String, String>> =
+                        serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
+                    food.insert(form[0].1.to_string(), nutrients);
+                    let file = std::fs::File::create("custom.json").unwrap();
+                    serde_json::to_writer(file, &food).unwrap();
+                } else {
+                    let mut food = HashMap::new();
+                    food.insert(form[0].1.to_string(), nutrients);
+                    let file = std::fs::File::create("custom.json").unwrap();
+                    serde_json::to_writer(file, &food).unwrap();
+                }
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+
+    let updater = warp::path!("updater").map({
+        || {
+            thread::spawn(|| update()).join().unwrap();
+            warp::redirect(Uri::from_static("/"))
+        }
+    });
 
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
     let routes = index
@@ -367,6 +364,8 @@ async fn main() {
         .or(amount)
         .or(add)
         .or(paper)
-        .or(change);
+        .or(change)
+        .or(clear)
+        .or(remove);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }
