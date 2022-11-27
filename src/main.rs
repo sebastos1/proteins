@@ -33,11 +33,11 @@ async fn main() {
     let order = order();
     let paperitems = Arc::new(Mutex::new(<Vec<(String, f32)>>::new()));
     let ind = Arc::new(Mutex::new(0));
-    let entries = 5;
+    let entries = 10;
 
     let index = warp::path!().map({
         let foods = foods.clone();
-        let x = x.clone(); // x
+        let x = x.clone();
         let keys = keys.clone(); // y
         let search = search.clone();
         let sort = sort.clone();
@@ -46,15 +46,8 @@ async fn main() {
         let ind = ind.clone();
         let entries = entries.clone();
         move || {
-            let foods = foods.clone();
-            let x = x.clone();
-            let keys = keys.clone();
             let search = search.lock().unwrap();
             let mut sort = sort.lock().unwrap();
-            let rng = id.lock().unwrap().to_string();
-            let sortword = sortword.lock().unwrap().to_string();
-            let ind = *ind.lock().unwrap();
-            let entries = entries.clone();
 
             let y: Vec<String> = if !sort.is_empty() {
                 sort.to_vec()
@@ -62,19 +55,19 @@ async fn main() {
                 if !search.is_empty() {
                     search.to_vec()
                 } else {
-                    keys
+                    keys.clone()
                 }
             };
             *sort = Vec::new();
             html(
                 Index {
-                    foods,
-                    x,
+                    foods: foods.clone(),
+                    x: x.clone(),
                     y,
-                    rng,
-                    sortword,
-                    ind,
-                    entries,
+                    rng: id.lock().unwrap().to_string(),
+                    sortword: sortword.lock().unwrap().to_string(),
+                    ind: *ind.lock().unwrap(),
+                    entries: entries.clone(),
                 }
                 .render_once()
                 .unwrap(),
@@ -188,16 +181,12 @@ async fn main() {
         let order = order.clone();
         let foods = foods.clone();
         move |product: String| {
-            let order = order.clone();
-            let product = urlencoding::decode(&product).unwrap().to_string();
-            let foods = foods.clone();
-            let multiplier = 1.0;
             html(
                 More {
-                    order,
-                    product,
-                    foods,
-                    multiplier,
+                    order: order.clone(),
+                    foods: foods.clone(),
+                    product: urlencoding::decode(&product).unwrap().to_string(),
+                    multiplier: 1.0,
                 }
                 .render_once()
                 .unwrap(),
@@ -254,20 +243,16 @@ async fn main() {
     let amount = warp::path!("amount")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
+            let id = id.clone();
             let order = order.clone();
             let foods = foods.clone();
-            let id = id.clone();
             move |form: Vec<(String, String)>| {
-                let order = order.clone();
-                let foods = foods.clone();
-                let product = &form[0].1;
-
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 html(
                     More {
-                        order,
-                        product: product.to_string(),
-                        foods,
+                        order: order.clone(),
+                        foods: foods.clone(),
+                        product: form[0].1.to_string(),
                         multiplier: form[1].1.parse::<f32>().unwrap() / 100.,
                     }
                     .render_once()
@@ -280,9 +265,14 @@ async fn main() {
         let foods = foods.clone();
         let paperitems = paperitems.clone();
         move || {
-            let foods = foods.clone();
-            let paperitems = paperitems.lock().unwrap().to_vec();
-            html(Paper { foods, paperitems }.render_once().unwrap())
+            html(
+                Paper {
+                    foods: foods.clone(),
+                    paperitems: paperitems.lock().unwrap().to_vec(),
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -294,21 +284,18 @@ async fn main() {
             let foods = foods.clone();
             let paperitems = paperitems.clone();
             move |form: Vec<(String, String)>| {
-                let order = order.clone();
-                let foods = foods.clone();
-                let mut paperitems = paperitems.lock().unwrap();
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                let mut paperitems = paperitems.lock().unwrap();
 
                 let product = &form[0].1;
                 let multiplier = form[1].1.parse::<f32>().unwrap();
-
                 paperitems.push((product.to_string(), multiplier));
-
+                
                 html(
                     More {
-                        order,
+                        order: order.clone(),
+                        foods: foods.clone(),
                         product: product.to_string(),
-                        foods,
                         multiplier,
                     }
                     .render_once()
