@@ -14,9 +14,9 @@
             </tr>
             <% for (product, multiplier) in &paperitems { %>
                 <tr>
-                        <td><%= product %></td>
+                        <td><%= product %> (<%= format!("{:.1}", multiplier * 100.).replace(".0", "") %>) g)</td>
                     <% if foods[product].contains_key("kJ") && foods[product].contains_key("kcal") { %>
-                        <td><%= format!("{:.1} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %> / <%= format!("{:.1} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                        <td><%= format!("{:.0} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier) %> / <%= format!("{:.0} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier) %></td>
                     <% } else { %>
                         <td>0 kJ / 0 kcal</td>
                     <% } %>
@@ -32,7 +32,11 @@
             <% } %>
             
             <tfoot>
-                <td>Total</td>
+                <% let mut sum: f32 = 0.; %>
+                <% for (_product, multiplier) in &paperitems { %>
+                    <% sum = sum + 100. * multiplier; %>
+                <% } %>
+                <td>Total (<%= format!("{:.1}", sum).replace(".0", "") %> g)</td>
 
                 <td>
                 <% let mut kj: f32 = 0.; %>
@@ -41,15 +45,17 @@
                     <% kj = kj + foods[&product.to_string()]["kJ"].parse::<f32>().unwrap() * multiplier; %>
                     <% kcal = kcal + foods[&product.to_string()]["kcal"].parse::<f32>().unwrap() * multiplier; %>
                 <% } %>
-                <%= format!("{} kJ / {} kcal", kj, kcal) %>
+                <%= format!("{:.0} kJ / {:.0} kcal", kj, kcal) %>
                 </td>
 
                 <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
                     <% let mut sum: f32 = 0.; %>
                     <% for (product, multiplier) in &paperitems { %>
-                        <% sum = sum + foods[&product.to_string()][item].parse::<f32>().unwrap() * multiplier; %>
+                        <% if foods[&product.to_string()].contains_key(item) { %>
+                            <% sum = sum + foods[&product.to_string()][item].parse::<f32>().unwrap() * multiplier; %>
+                        <% } %>
                     <% } %>
-                    <td><%= sum %></td>
+                    <td><%= format!("{:.1} g", sum).replace(".0", "") %></td>
                 <% } %>
             </tfoot>
             </table>

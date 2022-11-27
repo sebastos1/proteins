@@ -4,7 +4,7 @@
         <h1><%= product %></h1>
         <form action="/amount">
             <input type="hidden" name="product" value="<%= product %>">
-            <input type="number" name="amount" value="" placeholder="Custom grams">
+            <input type="number" step="any" name="amount" value="" placeholder="Custom grams">
             <input type="submit" style="visibility:hidden;height:0%">
         </form>
         <form action="/add">

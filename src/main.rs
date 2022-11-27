@@ -24,7 +24,7 @@ async fn main() {
         }
     }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
-    keys.sort_by_key(|name| name.to_lowercase());
+        keys.sort_by_key(|name| name.to_lowercase());
     let search = Arc::new(Mutex::new(<Vec<String>>::new()));
     let sort = Arc::new(Mutex::new(<Vec<String>>::new()));
     let sortword = Arc::new(Mutex::new(String::new()));
