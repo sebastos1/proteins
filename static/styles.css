@@ -7,38 +7,82 @@
     --hover: #f83b3b;
     --border: var(--bg2);
     --grayed: #505050;
-  
-    --rounding: 15px;
-  }
 
+    --rounding: 15px;
+}
 
 body {
     background-color: #121212;
 }
 
-.mainlist {
+
+thead,
+tfoot {
+    background-color: #181818;
 }
 
-.mainlist > tbody > tr {
-    background-color: #1d1d1d;
-}
-.mainlist > tbody > tr:nth-child(even) {
+table>tbody>tr {
     background-color: #272727;
 }
 
-.updatebutton {
-    position: absolute;
-    top: 0;
-    left: 0%;
+table>tbody>tr:nth-child(even) {
+    background-color: #1d1d1d;
 }
 
-.sortbutton {
+button {
     background-color: #121212;
 }
 
-.detable > tbody > tr {
-    background-color: #1d1d1d;
+.indexbody {
+    margin: 0;
+    max-width: none;
 }
-.detable > tbody > tr:nth-child(even) {
-    background-color: #272727;
+
+.sorttype {
+    float: right;
 }
+
+.hiddensubmit {
+    visibility: hidden;
+    height: 0%;
+    margin: 0;
+    padding: 0;
+}
+
+.searchbutton {
+    width: 50%;
+    float: left;
+    padding: 0;
+    margin: 0;
+    height: 40px;
+}
+
+.pagebuttons {
+    height:45px;
+}
+
+.submit {
+    margin: 0;
+}
+
+.prev {
+    float:left;
+    width:fit-content;
+    margin:0;
+}
+
+.next {
+    float:right;
+    width:fit-content;
+    padding:0;
+}
+
+.tablecontainer {
+    margin-top: 20px;
+}
+
+.biglist > thead:nth-child(1) > tr:nth-child(1) > td:nth-child(1) {
+    width: 30%;
+}
+
+

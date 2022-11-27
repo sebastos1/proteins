@@ -27,6 +27,7 @@ pub struct More<'a> {
 pub struct Paper {
     pub foods: HashMap<String, HashMap<String, String>>,
     pub paperitems: Vec<(String, f32)>,
+    pub rng: String,
 }
 
 #[derive(TemplateOnce)]

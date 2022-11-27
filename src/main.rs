@@ -24,7 +24,7 @@ async fn main() {
         }
     }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
-        keys.sort_by_key(|name| name.to_lowercase());
+    keys.sort_by_key(|name| name.to_lowercase());
     let search = Arc::new(Mutex::new(<Vec<String>>::new()));
     let sort = Arc::new(Mutex::new(<Vec<String>>::new()));
     let sortword = Arc::new(Mutex::new(String::new()));
@@ -36,15 +36,15 @@ async fn main() {
     let entries = 10;
 
     let index = warp::path!().map({
-        let foods = foods.clone();
         let x = x.clone();
-        let keys = keys.clone(); // y
-        let search = search.clone();
-        let sort = sort.clone();
         let id = id.clone();
-        let sortword = sortword.clone();
         let ind = ind.clone();
+        let keys = keys.clone();
+        let sort = sort.clone();
+        let foods = foods.clone();
+        let search = search.clone();
         let entries = entries.clone();
+        let sortword = sortword.clone();
         move || {
             let search = search.lock().unwrap();
             let mut sort = sort.lock().unwrap();
@@ -78,8 +78,12 @@ async fn main() {
     let change = warp::path!("change")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
+            let x = x.clone();
             let id = id.clone();
             let ind = ind.clone();
+            let sort = sort.clone();
+            let foods = foods.clone();
+            let sortword = sortword.clone();
             move |form: Vec<(String, String)>| {
                 let lol = *ind.lock().unwrap();
                 if form[0].1 == "up" {
@@ -88,24 +92,37 @@ async fn main() {
                     *ind.lock().unwrap() = lol - entries;
                 }
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-                warp::redirect(Uri::from_static("/"))
+
+                html(
+                    Index {
+                        foods: foods.clone(),
+                        x: x.clone(),
+                        y: (&*sort.lock().unwrap()).to_vec(),
+                        rng: (*id.lock().unwrap()).to_string(),
+                        sortword: sortword.lock().unwrap().to_string(),
+                        ind: *ind.lock().unwrap(),
+                        entries: entries.clone(),
+                    }
+                    .render_once()
+                    .unwrap(),
+                )
             }
         });
 
     let sort = warp::path!("sort")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
-            let foods = foods.clone();
-            let keys = keys.clone();
-            let search = search.clone();
-            let sort = sort.clone();
-            let sortword = sortword.clone();
             let id = id.clone();
             let ind = ind.clone();
+            let keys = keys.clone();
+            let sort = sort.clone();
+            let foods = foods.clone();
+            let search = search.clone();
+            let sortword = sortword.clone();
             move |form: Vec<(String, String)>| {
                 *ind.lock().unwrap() = 0;
-                let foods = foods.clone();
                 let keys = keys.clone();
+                let foods = foods.clone();
                 let search = search.lock().unwrap();
                 let mut sort = sort.lock().unwrap();
                 let mut sortword = sortword.lock().unwrap();
@@ -149,7 +166,20 @@ async fn main() {
                 }
                 *sort = sorted.clone();
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-                warp::redirect(Uri::from_static("/"))
+
+                html(
+                    Index {
+                        foods: foods.clone(),
+                        x: x.clone(),
+                        y: sorted,
+                        rng: id.lock().unwrap().to_string(),
+                        sortword: sortword.to_string(),
+                        ind: *ind.lock().unwrap(),
+                        entries: entries.clone(),
+                    }
+                    .render_once()
+                    .unwrap(),
+                )
             }
         });
 
@@ -157,9 +187,9 @@ async fn main() {
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let id = id.clone();
+            let ind = ind.clone();
             let keys = keys.clone();
             let search = search.clone();
-            let ind = ind.clone();
             move |form: Vec<(String, String)>| {
                 *ind.lock().unwrap() = 0;
                 let keys = keys.clone();
@@ -215,6 +245,7 @@ async fn main() {
                     "kJ".to_string(),
                     format!("{:.1}", form[1].1.parse::<f32>().unwrap() * 4.2),
                 );
+                nutrients.insert("Source".to_string(), "custom".to_string());
 
                 if !std::path::Path::new("custom.json").exists() {
                     let mut food = HashMap::new();
@@ -262,6 +293,7 @@ async fn main() {
         });
 
     let paper = warp::path("paper").map({
+        let id = id.clone();
         let foods = foods.clone();
         let paperitems = paperitems.clone();
         move || {
@@ -269,6 +301,7 @@ async fn main() {
                 Paper {
                     foods: foods.clone(),
                     paperitems: paperitems.lock().unwrap().to_vec(),
+                    rng: id.lock().unwrap().to_string(),
                 }
                 .render_once()
                 .unwrap(),
@@ -285,12 +318,29 @@ async fn main() {
             let paperitems = paperitems.clone();
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-                let mut paperitems = paperitems.lock().unwrap();
-
+                
                 let product = &form[0].1;
                 let multiplier = form[1].1.parse::<f32>().unwrap();
-                paperitems.push((product.to_string(), multiplier));
+
+                let mut paperitems = paperitems.lock().unwrap();
+                let iterator = paperitems.clone();
+
+                if paperitems.is_empty() {
+                    paperitems.push((product.to_string(), multiplier));
+                } else {
+                    let mut contains = false;
+                    for (i, (prod, mul)) in iterator.iter().enumerate() {
+                        if prod == product {
+                            paperitems[i].1 = mul + multiplier;
+                            contains = true;
+                        }
+                    }
+                    if contains == false {
+                        paperitems.push((product.to_string(), multiplier));
+                    }
+                }
                 
+
                 html(
                     More {
                         order: order.clone(),
@@ -303,6 +353,7 @@ async fn main() {
                 )
             }
         });
+
 
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
     let routes = index

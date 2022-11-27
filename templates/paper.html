@@ -11,23 +11,31 @@
                 <th>Proteins</th>
                 <th>Carbs</th>
                 <th>Fat</th>
+                <th>Remove</th>
             </tr>
             <% for (product, multiplier) in &paperitems { %>
                 <tr>
-                        <td><%= product %> (<%= format!("{:.1}", multiplier * 100.).replace(".0", "") %>) g)</td>
-                    <% if foods[product].contains_key("kJ") && foods[product].contains_key("kcal") { %>
-                        <td><%= format!("{:.0} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier) %> / <%= format!("{:.0} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier) %></td>
-                    <% } else { %>
-                        <td>0 kJ / 0 kcal</td>
-                    <% } %>
+                    <td><%= product %> (<%= format!("{:.1}", multiplier * 100.).replace(".0", "") %> g)</td>
+                <% if foods[product].contains_key("kJ") && foods[product].contains_key("kcal") { %>
+                    <td><%= format!("{:.0} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier) %> / <%= format!("{:.0} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier) %></td>
+                <% } else { %>
+                    <td>0 kJ / 0 kcal</td>
+                <% } %>
 
-                    <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
+                <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
                     <% if foods[product].contains_key(item) { %>
                         <td><%= format!("{:.1} g", foods[product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                     <% } else { %>
                         <td>0 g</td>
                     <% } %>
-                    <% } %>
+                <% } %>
+                <td>
+                    <form action="/remove">
+                        <input type="hidden" name="product" value="<%= product %>">
+                        <input type="hidden" name="product" value="<%= rng %>">
+                        <input type="submit" value="remove">
+                    </form>
+                </td>
                 </tr>
             <% } %>
             
@@ -57,6 +65,13 @@
                     <% } %>
                     <td><%= format!("{:.1} g", sum).replace(".0", "") %></td>
                 <% } %>
+
+                <td>
+                    <form action="/clear">
+                        <input type="hidden" name="product" value="<%= rng %>">
+                        <input type="submit" value="clear">
+                    </form>
+                </td>
             </tfoot>
             </table>
         <% } %>
