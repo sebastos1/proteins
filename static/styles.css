@@ -15,6 +15,14 @@ body {
     background-color: #121212;
 }
 
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
 
 thead,
 tfoot {
@@ -33,6 +41,7 @@ button {
     background-color: #121212;
 }
 
+
 .indexbody {
     margin: 0;
     max-width: none;
@@ -40,6 +49,16 @@ button {
 
 .sorttype {
     float: right;
+}
+
+.sortbutton {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .hiddensubmit {

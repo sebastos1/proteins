@@ -25,8 +25,10 @@ async fn main() {
     }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
     keys.sort_by_key(|name| name.to_lowercase());
-    let search = Arc::new(Mutex::new(<Vec<String>>::new()));
-    let sort = Arc::new(Mutex::new(<Vec<String>>::new()));
+
+    // vector of valid keys to be displayed, IN ORDER!
+    let prods = Arc::new(Mutex::new(<Vec<String>>::new()));
+
     let sortword = Arc::new(Mutex::new(String::new()));
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
     let x = vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
@@ -40,25 +42,19 @@ async fn main() {
         let id = id.clone();
         let ind = ind.clone();
         let keys = keys.clone();
-        let sort = sort.clone();
+        let prods = prods.clone();
         let foods = foods.clone();
-        let search = search.clone();
         let entries = entries.clone();
         let sortword = sortword.clone();
         move || {
-            let search = search.lock().unwrap();
-            let mut sort = sort.lock().unwrap();
+            let prods = prods.lock().unwrap();
 
-            let y: Vec<String> = if !sort.is_empty() {
-                sort.to_vec()
+            let y: Vec<String> = if !prods.is_empty() {
+                prods.to_vec()
             } else {
-                if !search.is_empty() {
-                    search.to_vec()
-                } else {
-                    keys.clone()
-                }
+                keys.clone()
             };
-            *sort = Vec::new();
+
             html(
                 Index {
                     foods: foods.clone(),
@@ -75,37 +71,28 @@ async fn main() {
         }
     });
 
-    let change = warp::path!("change")
+    let search = warp::path!("search")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
-            let x = x.clone();
             let id = id.clone();
             let ind = ind.clone();
-            let sort = sort.clone();
-            let foods = foods.clone();
-            let sortword = sortword.clone();
+            let keys = keys.clone();
+            let prods = prods.clone();
             move |form: Vec<(String, String)>| {
-                let lol = *ind.lock().unwrap();
-                if form[0].1 == "up" {
-                    *ind.lock().unwrap() = lol + entries;
-                } else if lol >= entries {
-                    *ind.lock().unwrap() = lol - entries;
-                }
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                *ind.lock().unwrap() = 0;
 
-                html(
-                    Index {
-                        foods: foods.clone(),
-                        x: x.clone(),
-                        y: (&*sort.lock().unwrap()).to_vec(),
-                        rng: (*id.lock().unwrap()).to_string(),
-                        sortword: sortword.lock().unwrap().to_string(),
-                        ind: *ind.lock().unwrap(),
-                        entries: entries.clone(),
+                let mut valid: Vec<String> = Vec::new();
+                for item in &keys {
+                    if item.to_lowercase().contains(&form[0].1.to_lowercase()) {
+                        valid.push(item.to_string())
                     }
-                    .render_once()
-                    .unwrap(),
-                )
+                }
+
+                let mut prods = prods.lock().unwrap();
+                *prods = valid;
+                
+                warp::redirect(Uri::from_static("/"))
             }
         });
 
@@ -115,16 +102,16 @@ async fn main() {
             let id = id.clone();
             let ind = ind.clone();
             let keys = keys.clone();
-            let sort = sort.clone();
             let foods = foods.clone();
-            let search = search.clone();
+            let prods = prods.clone();
             let sortword = sortword.clone();
             move |form: Vec<(String, String)>| {
+                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 *ind.lock().unwrap() = 0;
+
                 let keys = keys.clone();
                 let foods = foods.clone();
-                let search = search.lock().unwrap();
-                let mut sort = sort.lock().unwrap();
+                let mut prods = prods.lock().unwrap();
                 let mut sortword = sortword.lock().unwrap();
                 let mut collected: Vec<(String, u32)> = Vec::new();
 
@@ -147,10 +134,10 @@ async fn main() {
                 }
 
                 let mut sorted: Vec<String> = Vec::new();
-                if search.is_empty() {
+                if prods.is_empty() {
                     sort!(keys)
                 } else {
-                    sort!(*search)
+                    sort!(*prods)
                 }
 
                 if form[0].1 != sortword.to_string() {
@@ -161,48 +148,30 @@ async fn main() {
                     *sortword = format!("{} (desc.)", form[0].1.clone());
                 }
 
-                for prod in collected {
-                    sorted.push(prod.0)
+                for item in collected {
+                    sorted.push(item.0)
                 }
-                *sort = sorted.clone();
-                *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-
-                html(
-                    Index {
-                        foods: foods.clone(),
-                        x: x.clone(),
-                        y: sorted,
-                        rng: id.lock().unwrap().to_string(),
-                        sortword: sortword.to_string(),
-                        ind: *ind.lock().unwrap(),
-                        entries: entries.clone(),
-                    }
-                    .render_once()
-                    .unwrap(),
-                )
+                *prods = sorted.clone();
+                
+                warp::redirect(Uri::from_static("/"))
             }
         });
 
-    let search = warp::path!("search")
+    let change = warp::path!("change")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let id = id.clone();
             let ind = ind.clone();
-            let keys = keys.clone();
-            let search = search.clone();
             move |form: Vec<(String, String)>| {
-                *ind.lock().unwrap() = 0;
-                let keys = keys.clone();
-                let mut search = search.lock().unwrap();
-
-                let mut sort: Vec<String> = Vec::new();
-                for item in keys {
-                    if item.to_lowercase().contains(&form[0].1.to_lowercase()) {
-                        sort.push(item)
-                    }
-                }
-                *search = sort.clone();
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
+                let val = *ind.lock().unwrap();
+
+                if form[0].1 == "up" {
+                    *ind.lock().unwrap() = val + entries;
+                } else if val >= entries {
+                    *ind.lock().unwrap() = val - entries;
+                }
+        
                 warp::redirect(Uri::from_static("/"))
             }
         });
