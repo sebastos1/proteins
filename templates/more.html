@@ -13,6 +13,14 @@
             <input type="submit" value="Add to list">
         </form>
         <table class="detable">
+            <thead>
+                <tr>
+                    <td>
+                        Næringsinnhold per <%= format!("{:.1}", 100. * multiplier).replace(".0", "") %> g
+                    </td>
+                    <td></td>
+                </tr>
+            </thead>
             <tr>
                 <td>kJ / kcal</td>
                 <% if foods[&product].contains_key("kJ") && foods[&product].contains_key("kcal") { %>

@@ -1,6 +1,21 @@
 use serde_json::Value;
 use std::collections::HashMap;
 
+pub fn init() -> HashMap<String, HashMap<String, String>> {
+    let mut foods: HashMap<String, HashMap<String, String>> =
+        serde_json::from_str(&std::fs::read_to_string("output.json").unwrap()).unwrap();
+    if std::path::Path::new("custom.json").exists()
+        && &std::fs::read_to_string("custom.json").unwrap() != ""
+    {
+        let custom_foods: HashMap<String, HashMap<String, String>> =
+            serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
+        for (k, v) in custom_foods.iter() {
+            foods.insert(k.to_string(), v.clone());
+        }
+    }
+    foods
+}
+
 pub fn update() {
     let url = std::fs::read_to_string("link.txt").unwrap();
     let source = url.clone();
