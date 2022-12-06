@@ -1,76 +1,84 @@
 <% include!("./header.html"); %>
   <body class="indexbody">
-    <a href="/custom">Custom product</a>
-    <a href="/paper">Custom list</a>
-    <div class="tablecontainer">
-        <form action="/search" class="searchbutton">
-            <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
-            <input type="hidden" name="id" value="<%= rng %>">
-            <input type="submit" class="hiddensubmit">
-        </form>
-        <% if word != "" { %>
-            <h3 class="sorttype">Sorting by: <%= word%></h3>
-        <% } else { %>
-            <h3 class="sorttype">Not sorting</h3>
-        <% } %>
-        <table class="biglist">
-            <thead>
-                <td></td>
-                <% for item in &x { %>
-                    <td>
-                        <form action="/sort" >
-                            <input type="hidden" name="sortby" value="<%= item %>">
-                            <input type="hidden" name="id" value="<%= rng %>">
-                            <input type="submit" value="<%= item %>" class="sortbutton">
-                        </form>
-                    </td>
-                <% } %>
-            </thead>
-    
-            <% let end: usize; %>
-            <% let ind = ind; %>
-    
-            <% if y.len() < entries { %>
-                <% end = y.len(); %>
-            <% } else if ind >= y.len()-entries { %>
-                <% end = y.len(); %>
+    <div class="mayn">
+        <div class="tablecontainer">
+            <div class="buttons">
+                <form action="/custom">
+                    <input type="submit" value="Add product" />
+                </form>
+                <form action="/paper">
+                    <input type="submit" value="Custom list" />
+                </form>
+                <form action="/search" class="searchbutton">
+                    <input type="text" name="search" value="" placeholder="Showing <%= &y.len() %> foods">
+                    <input type="hidden" name="id" value="<%= rng %>">
+                    <input type="submit" class="hiddensubmit">
+                </form>
+            </div>
+            <% if word != "" { %>
+                <h3 class="sorttype">Sorting by: <%= word%></h3>
             <% } else { %>
-                <% end = ind + entries; %>
+                <h3 class="sorttype">Not sorting</h3>
             <% } %>
-    
-            <% if y.is_empty() { %>
-                <p>No results.</p>
-            <% } else { %>
-                <% for k in &y[ind..end] { %>
-                        <td><a href="/product/<%= k %>"><%= k %></a></td>
-                        <% for entry in &x { %>
-                            <% if foods[k].contains_key(&entry.to_string()) { %>
-                                <td><%= foods[k][&entry.to_string()] %></td>
-                            <% } else { %>
-                                <td><%= "0" %></td>
+            <table class="biglist">
+                <thead>
+                    <td></td>
+                    <% for item in &x { %>
+                        <td>
+                            <form action="/sort" >
+                                <input type="hidden" name="sortby" value="<%= item %>">
+                                <input type="hidden" name="id" value="<%= rng %>">
+                                <input type="submit" value="<%= item %>" class="sortbutton">
+                            </form>
+                        </td>
+                    <% } %>
+                </thead>
+        
+                <% let end: usize; %>
+                <% let ind = ind; %>
+        
+                <% if y.len() < entries { %>
+                    <% end = y.len(); %>
+                <% } else if ind >= y.len()-entries { %>
+                    <% end = y.len(); %>
+                <% } else { %>
+                    <% end = ind + entries; %>
+                <% } %>
+        
+                <% if y.is_empty() { %>
+                    <p>No results.</p>
+                <% } else { %>
+                    <% for k in &y[ind..end] { %>
+                            <td class="prodname"><a href="/product/<%= k %>"><%= k %></a></td>
+                            <% for entry in &x { %>
+                                <% if foods[k].contains_key(&entry.to_string()) { %>
+                                    <td><%= foods[k][&entry.to_string()] %></td>
+                                <% } else { %>
+                                    <td><%= "0" %></td>
+                                <% } %>
                             <% } %>
-                        <% } %>
-                    </tr>
+                        </tr>
+                    <% } %>
                 <% } %>
-            <% } %>
-        </table>
-        <div class="pagebuttons">
-            <% if ind >= entries { %>
-                <form action="/change" class="prev">
-                    <input type="hidden" name="goto" value="down">
-                    <input type="hidden" name="id" value="<%= rng %>">
-                    <input type="submit" value="Prev page" class="submit">
-                </form>
-            <% } %>
-            <% if y.len() > entries && ind < y.len()-entries { %>
-                <form action="/change" class="next">
-                    <input type="hidden" name="goto" value="up">
-                    <input type="hidden" name="id" value="<%= rng %>">
-                    <input type="submit" value="Next page" class="submit">
-                </form>
-            <% } %>
+            </table>
+            <div class="pagebuttons">
+                <% if ind >= entries { %>
+                    <form action="/change" class="prev">
+                        <input type="hidden" name="goto" value="down">
+                        <input type="hidden" name="id" value="<%= rng %>">
+                        <input type="submit" value="Prev page" class="submit">
+                    </form>
+                <% } %>
+                <% if y.len() > entries && ind < y.len()-entries { %>
+                    <form action="/change" class="next">
+                        <input type="hidden" name="goto" value="up">
+                        <input type="hidden" name="id" value="<%= rng %>">
+                        <input type="submit" value="Next page" class="submit">
+                    </form>
+                <% } %>
+            </div>
         </div>
+        <a href="/updater">Update</a>
     </div>
-    <a href="/updater">Update</a>
   </body>
 </html>

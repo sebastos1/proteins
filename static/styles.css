@@ -41,7 +41,6 @@ button {
     background-color: #121212;
 }
 
-
 .indexbody {
     margin: 0;
     max-width: none;
@@ -68,12 +67,41 @@ button {
     padding: 0;
 }
 
-.searchbutton {
-    width: 50%;
+.buttons {
     float: left;
-    padding: 0;
+}
+
+.buttons > * {
+    display: inline-block;
     margin: 0;
+    padding: 0;
     height: 40px;
+    vertical-align: middle;
+}
+
+.searchbutton {
+    height: 40px;
+}
+
+.overlay {
+    background-color: black;
+    padding: 10px;
+    /* right: 0; */
+    float: right;
+}
+
+.prodname {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.prodname > a {
+    color: white;
+}
+.prodname:hover {
+    white-space: unset;
+    overflow: unset;
+    text-overflow: unset;
 }
 
 .pagebuttons {
