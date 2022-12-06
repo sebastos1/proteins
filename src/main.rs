@@ -24,7 +24,7 @@ async fn main() {
         }
     }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
-        keys.sort_by_key(|name| name.to_lowercase());
+    keys.sort_by_key(|name| name.to_lowercase());
     let prods = Arc::new(Mutex::new(<Vec<String>>::new()));
     let word = Arc::new(Mutex::new(String::new()));
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
@@ -107,36 +107,27 @@ async fn main() {
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 *ind.lock().unwrap() = 0;
-
-                let keys = keys.clone();
-                let foods = foods.clone();
                 let mut prods = prods.lock().unwrap();
                 let mut word = word.lock().unwrap();
-                let mut collected: Vec<(String, u32)> = Vec::new();
 
-                // flex macro
-                macro_rules! sort {
-                    ($a:expr) => {
-                        for prod in &$a {
-                            if foods[prod].contains_key(&form[0].1) && foods[prod][&form[0].1] != ""
-                            {
-                                collected.push((
-                                    prod.clone(),
-                                    (foods[prod][&form[0].1].trim().parse::<f32>().unwrap() * 100.)
-                                        as u32,
-                                ));
-                            } else {
-                                collected.push((prod.clone(), 0. as u32))
-                            }
-                        }
-                    };
-                }
-
+                let sort: Vec<String>;
                 let mut sorted: Vec<String> = Vec::new();
                 if prods.is_empty() {
-                    sort!(keys)
+                    sort = keys.clone();
                 } else {
-                    sort!(*prods)
+                    sort = (*prods.clone()).to_vec();
+                }
+
+                let mut collected: Vec<(String, u32)> = Vec::new();
+                for prod in &sort {
+                    if foods[prod].contains_key(&form[0].1) && foods[prod][&form[0].1] != "" {
+                        collected.push((
+                            prod.clone(),
+                            (foods[prod][&form[0].1].trim().parse::<f32>().unwrap() * 100.) as u32,
+                        ));
+                    } else {
+                        collected.push((prod.clone(), 0. as u32))
+                    }
                 }
 
                 if form[0].1 != word.to_string() {

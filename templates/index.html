@@ -38,16 +38,20 @@
                 <% end = ind + entries; %>
             <% } %>
     
-            <% for k in &y[ind..end] { %>
-                    <td><a href="/product/<%= k %>"><%= k %></a></td>
-                    <% for entry in &x { %>
-                        <% if foods[k].contains_key(&entry.to_string()) { %>
-                            <td><%= foods[k][&entry.to_string()] %></td>
-                        <% } else { %>
-                            <td><%= "0" %></td>
+            <% if y.is_empty() { %>
+                <p>No results.</p>
+            <% } else { %>
+                <% for k in &y[ind..end] { %>
+                        <td><a href="/product/<%= k %>"><%= k %></a></td>
+                        <% for entry in &x { %>
+                            <% if foods[k].contains_key(&entry.to_string()) { %>
+                                <td><%= foods[k][&entry.to_string()] %></td>
+                            <% } else { %>
+                                <td><%= "0" %></td>
+                            <% } %>
                         <% } %>
-                    <% } %>
-                </tr>
+                    </tr>
+                <% } %>
             <% } %>
         </table>
         <div class="pagebuttons">
