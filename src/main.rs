@@ -24,14 +24,11 @@ async fn main() {
         }
     }
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
-    keys.sort_by_key(|name| name.to_lowercase());
-
-    // vector of valid keys to be displayed, IN ORDER!
+        keys.sort_by_key(|name| name.to_lowercase());
     let prods = Arc::new(Mutex::new(<Vec<String>>::new()));
-
-    let sortword = Arc::new(Mutex::new(String::new()));
+    let word = Arc::new(Mutex::new(String::new()));
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
-    let x = vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
+    let x = x();
     let order = order();
     let paperitems = Arc::new(Mutex::new(<Vec<(String, f32)>>::new()));
     let ind = Arc::new(Mutex::new(0));
@@ -42,10 +39,10 @@ async fn main() {
         let id = id.clone();
         let ind = ind.clone();
         let keys = keys.clone();
+        let word = word.clone();
         let prods = prods.clone();
         let foods = foods.clone();
         let entries = entries.clone();
-        let sortword = sortword.clone();
         move || {
             let prods = prods.lock().unwrap();
 
@@ -61,7 +58,7 @@ async fn main() {
                     x: x.clone(),
                     y,
                     rng: id.lock().unwrap().to_string(),
-                    sortword: sortword.lock().unwrap().to_string(),
+                    word: word.lock().unwrap().to_string(),
                     ind: *ind.lock().unwrap(),
                     entries: entries.clone(),
                 }
@@ -77,10 +74,12 @@ async fn main() {
             let id = id.clone();
             let ind = ind.clone();
             let keys = keys.clone();
+            let word = word.clone();
             let prods = prods.clone();
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 *ind.lock().unwrap() = 0;
+                *word.lock().unwrap() = String::new();
 
                 let mut valid: Vec<String> = Vec::new();
                 for item in &keys {
@@ -91,7 +90,7 @@ async fn main() {
 
                 let mut prods = prods.lock().unwrap();
                 *prods = valid;
-                
+
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -102,9 +101,9 @@ async fn main() {
             let id = id.clone();
             let ind = ind.clone();
             let keys = keys.clone();
+            let word = word.clone();
             let foods = foods.clone();
             let prods = prods.clone();
-            let sortword = sortword.clone();
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 *ind.lock().unwrap() = 0;
@@ -112,7 +111,7 @@ async fn main() {
                 let keys = keys.clone();
                 let foods = foods.clone();
                 let mut prods = prods.lock().unwrap();
-                let mut sortword = sortword.lock().unwrap();
+                let mut word = word.lock().unwrap();
                 let mut collected: Vec<(String, u32)> = Vec::new();
 
                 // flex macro
@@ -140,19 +139,19 @@ async fn main() {
                     sort!(*prods)
                 }
 
-                if form[0].1 != sortword.to_string() {
+                if form[0].1 != word.to_string() {
                     collected.sort_by(|a, b| b.1.cmp(&a.1));
-                    *sortword = form[0].1.clone();
+                    *word = form[0].1.clone();
                 } else {
                     collected.sort_by(|a, b| a.1.cmp(&b.1));
-                    *sortword = format!("{} (desc.)", form[0].1.clone());
+                    *word = format!("{} (desc.)", form[0].1.clone());
                 }
 
                 for item in collected {
                     sorted.push(item.0)
                 }
                 *prods = sorted.clone();
-                
+
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -165,13 +164,11 @@ async fn main() {
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 let val = *ind.lock().unwrap();
-
                 if form[0].1 == "up" {
                     *ind.lock().unwrap() = val + entries;
                 } else if val >= entries {
                     *ind.lock().unwrap() = val - entries;
                 }
-        
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -296,25 +293,23 @@ async fn main() {
                     format!("{:.1}", form[1].1.parse::<f32>().unwrap() * 4.2),
                 );
 
+                let mut food: HashMap<String, HashMap<String, String>>;
                 if std::path::Path::new("custom.json").exists()
                     && std::fs::read_to_string("custom.json").unwrap() != ""
                 {
-                    let mut food: HashMap<String, HashMap<String, String>> =
-                        serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap()).unwrap();
-                    food.insert(form[0].1.to_string(), nutrients);
-                    let file = std::fs::File::create("custom.json").unwrap();
-                    serde_json::to_writer(file, &food).unwrap();
+                    food = serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap())
+                        .unwrap();
                 } else {
-                    let mut food = HashMap::new();
-                    food.insert(form[0].1.to_string(), nutrients);
-                    let file = std::fs::File::create("custom.json").unwrap();
-                    serde_json::to_writer(file, &food).unwrap();
+                    food = HashMap::new();
                 }
+                food.insert(form[0].1.to_string(), nutrients);
+                let file = std::fs::File::create("custom.json").unwrap();
+                serde_json::to_writer(file, &food).unwrap();
                 warp::redirect(Uri::from_static("/"))
             }
         });
 
-    let updater = warp::path!("updater").map({
+    let update = warp::path!("update").map({
         || {
             thread::spawn(|| update()).join().unwrap();
             warp::redirect(Uri::from_static("/"))
@@ -327,7 +322,7 @@ async fn main() {
         .or(product)
         .or(search)
         .or(sort)
-        .or(updater)
+        .or(update)
         .or(custom)
         .or(insert)
         .or(amount)

@@ -8,7 +8,7 @@ pub struct Index<'a> {
     pub x: Vec<&'a str>,
     pub y: Vec<String>,
     pub rng: String,
-    pub sortword: String,
+    pub word: String,
     pub ind: usize,
     pub entries: usize,
 }
@@ -33,6 +33,10 @@ pub struct Paper {
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
 pub struct Custom {}
+
+pub fn x<'a>() -> Vec<&'a str> {
+    return vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
+}
 
 pub fn order<'a>() -> Vec<(&'a str, &'a str)> {
     return vec![
