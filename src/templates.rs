@@ -7,12 +7,12 @@ pub struct Index<'a> {
     pub ind: usize,
     pub rng: String,
     pub word: String,
+    pub showcol: bool,
     pub y: Vec<String>,
     pub entries: usize,
     pub active: Vec<String>,
     pub order: Vec<(&'a str, &'a str)>,
     pub foods: HashMap<String, HashMap<String, String>>,
-    pub showcol: bool,
 }
 
 #[derive(TemplateOnce)]

@@ -47,15 +47,15 @@ async fn main() {
             };
 
             html(Index {
-                foods: foods.clone(),
-                active: active.lock().unwrap().to_vec(),
                 y,
+                foods: foods.clone(),
+                order: order.clone(),
+                entries: entries.clone(),
+                ind: *ind.lock().unwrap(),
+                showcol: *showcol.lock().unwrap(),
                 rng: id.lock().unwrap().to_string(),
                 word: word.lock().unwrap().to_string(),
-                ind: *ind.lock().unwrap(),
-                entries: entries.clone(),
-                order: order.clone(),
-                showcol: *showcol.lock().unwrap(),
+                active: active.lock().unwrap().to_vec(),
             }.render_once().unwrap(),)
         }
     });
@@ -180,10 +180,10 @@ async fn main() {
         let foods = foods.clone();
         move |product: String| {
             html(More {
+                multiplier: 1.0,
                 order: order.clone(),
                 foods: foods.clone(),
                 product: urlencoding::decode(&product).unwrap().to_string(),
-                multiplier: 1.0,
             }.render_once().unwrap())
         }
     });
@@ -212,8 +212,8 @@ async fn main() {
         move || {
             html(Paper {
                 foods: foods.clone(),
-                paperitems: paperitems.lock().unwrap().to_vec(),
                 rng: id.lock().unwrap().to_string(),
+                paperitems: paperitems.lock().unwrap().to_vec(),
             }.render_once().unwrap())
         }
     });
