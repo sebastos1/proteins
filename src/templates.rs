@@ -4,42 +4,54 @@ use std::collections::HashMap;
 #[derive(TemplateOnce)]
 #[template(path = "index.html")]
 pub struct Index<'a> {
-    pub foods: HashMap<String, HashMap<String, String>>,
-    pub x: Vec<&'a str>,
-    pub y: Vec<String>,
+    pub ind: usize,
     pub rng: String,
     pub word: String,
-    pub ind: usize,
+    pub y: Vec<String>,
     pub entries: usize,
+    pub active: Vec<String>,
+    pub order: Vec<(&'a str, &'a str)>,
+    pub foods: HashMap<String, HashMap<String, String>>,
+    pub showcol: bool,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "more.html")]
 pub struct More<'a> {
-    pub order: Vec<(&'a str, &'a str)>,
     pub product: String,
-    pub foods: HashMap<String, HashMap<String, String>>,
     pub multiplier: f32,
+    pub order: Vec<(&'a str, &'a str)>,
+    pub foods: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "paper.html")]
 pub struct Paper {
-    pub foods: HashMap<String, HashMap<String, String>>,
-    pub paperitems: Vec<(String, f32)>,
     pub rng: String,
+    pub paperitems: Vec<(String, f32)>,
+    pub foods: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
 pub struct Custom {}
 
-pub fn x<'a>() -> Vec<&'a str> {
-    return vec!["kJ", "kcal", "Protein", "Karbohydrater", "Fett"];
+pub fn active() -> Vec<String> {
+    return vec![
+        "kcal".to_string(), 
+        "Protein".to_string(), 
+        "Karbohydrater".to_string(), 
+        "Fett".to_string()
+    ];
 }
 
 pub fn order<'a>() -> Vec<(&'a str, &'a str)> {
     return vec![
+        ("kJ", "kJ"),
+        ("kcal", "kcal"),
+        ("Protein", "g"),
+        ("Karbohydrater", "g"),
+        ("Fett", "g"),
         ("Hvorav mettet", "g"),
         ("Hvorav enumettet", "g"),
         ("Hvorav flerumettet", "g"),

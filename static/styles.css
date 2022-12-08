@@ -46,6 +46,10 @@ button {
     max-width: none;
 }
 
+.tablecontainer {
+    margin-top: 20px;
+}
+
 .sorttype {
     float: right;
 }
@@ -71,12 +75,19 @@ button {
     float: left;
 }
 
-.buttons > * {
+.buttons>* {
     display: inline-block;
-    margin: 0;
-    padding: 0;
     height: 40px;
     vertical-align: middle;
+}
+
+.buttons>form {
+    margin: 0;
+    padding: 0;
+}
+
+.detable {
+    margin-top: 60px;
 }
 
 .searchbutton {
@@ -95,41 +106,76 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.prodname > a {
+
+.prodname>a {
     color: white;
 }
+
 .prodname:hover {
     white-space: unset;
     overflow: unset;
     text-overflow: unset;
 }
 
-.pagebuttons {
-    height:45px;
-}
-
 .submit {
     margin: 0;
 }
 
+.pagebuttons {
+    height: 45px;
+    width: 100%;
+}
+
+.pagebuttons>* {
+    display: inline-block;
+}
+
 .prev {
-    float:left;
-    width:fit-content;
-    margin:0;
+    float: left;
+    margin: 0;
+    padding: 0;
 }
 
 .next {
-    float:right;
-    width:fit-content;
+    float: right;
+    margin: 0;
+    padding: 0;
+}
+
+.foodcount {
+    text-align: center;
+    position: absolute;
+    width: 150px;
+    left: calc(50% - 75px);
+}
+
+.foodcount > p {
+    margin:0;
     padding:0;
 }
 
-.tablecontainer {
-    margin-top: 20px;
+.upd {
+    text-align: center;
+    position: absolute;
+    width: 150px;
+    left: calc(50% - 75px);
 }
 
-.biglist > thead:nth-child(1) > tr:nth-child(1) > td:nth-child(1) {
+.prodval {
+    text-align: right;
+}
+
+.biglist>thead:nth-child(1)>tr:nth-child(1)>td:nth-child(1) {
     width: 30%;
 }
 
+.colticks {
+    width: 100%;
+    float: left;
+}
 
+.colticks > form > input {
+    display: inline-grid;
+    vertical-align: middle;
+    margin-left:0;
+}

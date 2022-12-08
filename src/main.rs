@@ -18,20 +18,23 @@ async fn main() {
     let prods = Arc::new(Mutex::new(<Vec<String>>::new()));
     let word = Arc::new(Mutex::new(String::new()));
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
-    let x = x();
     let order = order();
     let paperitems = Arc::new(Mutex::new(<Vec<(String, f32)>>::new()));
     let ind = Arc::new(Mutex::new(0));
     let entries = 10;
+    let active = Arc::new(Mutex::new(active()));
+    let showcol = Arc::new(Mutex::new(false));
 
     let index = warp::path!().map({
-        let x = x.clone();
         let id = id.clone();
         let ind = ind.clone();
         let keys = keys.clone();
         let word = word.clone();
+        let order = order.clone();
         let prods = prods.clone();
         let foods = foods.clone();
+        let active = active.clone();
+        let showcol = showcol.clone();
         let entries = entries.clone();
         move || {
             *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
@@ -45,12 +48,14 @@ async fn main() {
 
             html(Index {
                 foods: foods.clone(),
-                x: x.clone(),
+                active: active.lock().unwrap().to_vec(),
                 y,
                 rng: id.lock().unwrap().to_string(),
                 word: word.lock().unwrap().to_string(),
                 ind: *ind.lock().unwrap(),
                 entries: entries.clone(),
+                order: order.clone(),
+                showcol: *showcol.lock().unwrap(),
             }.render_once().unwrap(),)
         }
     });
@@ -67,14 +72,13 @@ async fn main() {
                 *word.lock().unwrap() = String::new();
 
                 let mut valid: Vec<String> = Vec::new();
+                let search = form[0].1.split(" ").collect::<Vec<&str>>();
                 for item in &keys {
-                    if item.to_lowercase().contains(&form[0].1.to_lowercase()) {
+                    if search.iter().all(|term| item.to_lowercase().contains(&term.to_lowercase())) && !valid.contains(item) {
                         valid.push(item.to_string())
                     }
                 }
-                let mut prods = prods.lock().unwrap();
-                *prods = valid;
-
+                *prods.lock().unwrap() = valid;
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -125,6 +129,33 @@ async fn main() {
                 }
                 *prods = sorted.clone();
 
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+
+    let showcolumn = warp::path!("columns")
+        .map({
+            let showcol = showcol.clone();
+            move || {
+                let lol = *showcol.lock().unwrap();
+                if lol == false {
+                    *showcol.lock().unwrap() = true
+                } else {
+                    *showcol.lock().unwrap() = false
+                }
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+    let column = warp::path!("column")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let active = active.clone();
+            move |form: Vec<(String, String)>| {
+                let mut new = Vec::<String>::new();
+                for (item, _) in &form[1..] {
+                    new.push(item.to_string());
+                }
+                *active.lock().unwrap() = new;
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -277,7 +308,7 @@ async fn main() {
 
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
     let routes = static_assets
-        .or(index).or(sort).or(search).or(change)
+        .or(index).or(sort).or(search).or(change).or(column).or(showcolumn)
         .or(paper).or(add).or(remove).or(clear)
         .or(product).or(amount)
         .or(custom).or(insert)
