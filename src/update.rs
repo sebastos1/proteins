@@ -1,5 +1,6 @@
 use serde_json::Value;
 use std::collections::HashMap;
+use crate::templates::trans;
 
 pub fn init() -> HashMap<String, HashMap<String, String>> {
     let mut foods: HashMap<String, HashMap<String, String>> =
@@ -48,35 +49,19 @@ pub fn update() {
             };
         }
 
-        floor!("kJ", "Energi1");
-        floor!("kcal", "Energi2");
-        insert!("Protein", "Protein");
-        insert!("Karbohydrater", "Karbo");
-        insert!("Fett", "Fett");
-        insert!("Fiber", "Fiber");
-        insert!("Omega-3", "Omega-3");
-        insert!("Hvorav mettet", "Mettet");
-        insert!("Hvorav enumettet", "Enumet");
-        insert!("Hvorav flerumettet", "Flerum");
-        insert!("Tilsatt sukker", "Sukker");
-        insert!("Transfett", "Trans");
-        insert!("Kolesterol", "Kolest");
-        insert!("Stivelse", "Stivel");
-        insert!("Salt", "NaCl");
-        insert!("Alkohol", "Alko");
-        insert!("Vit A", "Vit A");
-        insert!("Vit B1", "Vit B1");
-        insert!("Vit B2", "Vit B2");
-        insert!("Vit B6", "Vit B6");
-        insert!("Vit B12", "Vit B12");
-        insert!("Vit C", "Vit C");
-        insert!("Vit D", "Vit D");
-        insert!("Vit E", "Vit E");
-        insert!("Vann", "Vann");
+        for (k, v) in trans() {
+            if k == "kJ" || k == "kcal" {
+                floor!(k, v);
+            } else {
+                insert!(k, v);
+            }
+        }
+
         nutrients.insert("Source", &source);
         
         foods.insert(map["foods"][x]["name"].as_str().unwrap(), nutrients);
     }
     let file = std::fs::File::create("output.json").unwrap();
     serde_json::to_writer(file, &foods).unwrap();
+    println!("updated");
 }

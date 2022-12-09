@@ -26,7 +26,15 @@
             <% for (item, unit) in order { %>
                 <% if foods[&product].contains_key(item) { %>
                     <tr>
-                        <td><%= item %></td>
+                        <% if item == "Protein" || item == "Fett" || item == "Karbohydrater" { %>
+                            <td><b><%= item %></b></td>
+                        <% } else if item.contains("mettet") || item == "Sukkerarter" || item == "Stivelse" { %>
+                            <td><i>&nbsp;&nbsp;<%= item %></i></td>
+                        <% } else if item == "Omega-3" || item == "Omega-6" { %>
+                            <td><i>&nbsp;&nbsp;&nbsp;&nbsp;<%= item %></i></td>
+                        <% } else {%>
+                            <td><%= item %></td>
+                        <% } %>
 
                         <% let prec: usize; %>
                         <% if item != "Omega-3" && unit == "g" || unit == "mg-ATE" || unit == "µg" || unit == "µg-RE" { %>
@@ -36,7 +44,6 @@
                         <% } else { %>
                             <% prec = 0; %>
                         <% } %>
-
                         <td><%= (format!("{} {}", format!("{:.prec$}", (foods[&product][item].parse::<f32>().unwrap() * multiplier)), unit)) %></td>
                     </tr>
                  <% } %>
