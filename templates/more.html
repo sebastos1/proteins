@@ -28,7 +28,7 @@
                     <tr>
                         <% if item == "Protein" || item == "Fett" || item == "Karbohydrater" { %>
                             <td><b><%= item %></b></td>
-                        <% } else if item.contains("mettet") || item == "Sukkerarter" || item == "Stivelse" { %>
+                        <% } else if item.contains("ettet fett") || item == "Sukkerarter" || item == "Stivelse" { %>
                             <td><i>&nbsp;&nbsp;<%= item %></i></td>
                         <% } else if item == "Omega-3" || item == "Omega-6" { %>
                             <td><i>&nbsp;&nbsp;&nbsp;&nbsp;<%= item %></i></td>

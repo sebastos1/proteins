@@ -34,7 +34,9 @@ pub struct Paper {
 
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
-pub struct Custom {}
+pub struct Custom<'a> {
+    pub order: Vec<(&'a str, &'a str)>,
+}
 
 pub fn active() -> Vec<String> {
     return vec![
@@ -106,22 +108,3 @@ pub fn big<'a>() -> Vec<(&'a str, &'a str, &'a str)> {
         ("Jod", "µg", "I"),
     ];
 }
-
-// "Mettet": {"ref": "450c",
-    // "C12:0Laurinsyre": {"ref": "30",
-    // "C14:0Myristinsyre": {"ref": "30",
-    // "C16:0Palmitinsyre": {"ref": "30",
-    // "C18:0Stearinsyre": {"ref": "30",
-// "Enumet": {"ref": "450c",
-    // "C16:1": {"ref": "30",
-    // "C18:1": {"ref": "30",
-// "Flerum": {"ref": "450c",
-    // "C18:2n-6Linolsyre": {"ref": "30",
-    // "C18:3n-3AlfaLinolensyre": {"ref": "30",
-    // "C20:3n-3Eikosatriensyre": {"ref": "30",
-    // "C20:3n-6DihomoGammaLinolensyre": {"ref": "30",
-    // "C20:4n-3Eikosatetraensyre": {"ref": "30",
-    // "C20:4n-6Arakidonsyre": {"ref": "30",
-    // "C20:5n-3Eikosapentaensyre": {"ref": "30",
-    // "C22:5n-3Dokosapentaensyre": {"ref": "30",
-    // "C22:6n-3Dokosaheksaensyre": {"ref": "30",

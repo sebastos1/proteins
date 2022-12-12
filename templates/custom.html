@@ -3,12 +3,19 @@
         <a href="/">Table</a>
         <h2>Insert custom product</h2>
         <form action="/insert">
-            <input type="text" name="Name" value="" placeholder="Name">
-            <input type="number" step="any" name="kcal" value="" placeholder="kcal">
-            <input type="number" step="any" name="Protein" value="" placeholder="Protein">
-            <input type="number" step="any" name="Karbohydrater" value="" placeholder="Karbohydrater">
-            <input type="number" step="any" name="Fett" value="" placeholder="Fett">
-            <input type="submit" value="Submit">
+            <div class="inserts">
+                <input type="text" name="Name" value="" placeholder="Name">
+                <% for (item, unit) in order { %>
+                    <input type="number" step="any" name="<%= item %>" value=""
+                    <% if item != unit { %>
+                        placeholder="<%= item %> (<%= unit %>)"
+                    <% } else { %>
+                        placeholder="<%= item %>"
+                    <% } %>
+                    >
+                <% } %>
+                <input type="submit" value="Submit">
+            </div>
         </form>
     </body>
 </html>

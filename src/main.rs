@@ -267,7 +267,14 @@ async fn main() {
         }
     });
 
-    let custom = warp::path!("custom").map(move || html(Custom {}.render_once().unwrap()));
+    let custom = warp::path("custom").map({
+        let order = order.clone();
+        move || {
+            html(Custom {
+                order: order.clone()
+            }.render_once().unwrap())
+        }
+    });
 
     let insert = warp::path!("insert")
         .and(warp::query::<Vec<(String, String)>>())

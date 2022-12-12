@@ -26,7 +26,7 @@
                         <input type="hidden" name="id" value="<%= rng %>">
                         <% for (item, _) in order { %>
                             <b><%= item %>:</b>
-                            <input type="checkbox" name="<%= item %>"
+                            <input class="tick" type="checkbox" name="<%= item %>"
                             <% if active.contains(&item.to_string()) { %>
                                 value="1" checked
                             <% } %>
@@ -67,13 +67,13 @@
                     <% end = ind + entries; %>
                 <% } %>
         
-                <% if y.is_empty() { %>
+                <% if y.is_empty() { %>
                     <p>No results.</p>
                 <% } else { %>
                     <% for k in &y[ind..end] { %>
                             <td class="prodname"><a href="/product/<%= k %>"><%= k %></a></td>
                             <% for entry in &active { %>
-                                <% if foods[k].contains_key(&entry.to_string()) { %>
+                                <% if foods[k].contains_key(&entry.to_string()) && foods[k][&entry.to_string()] != ""  { %>
                                     <td class="prodval"><%= foods[k][&entry.to_string()] %></td>
                                 <% } else { %>
                                     <td class="prodval"><%= "0" %></td>
