@@ -1,20 +1,21 @@
 use http::Uri;
 use rand::Rng;
-use std::thread;
-use warp::Filter;
+use sailfish::TemplateOnce;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 use warp::reply::html;
-use sailfish::TemplateOnce;
-use std::collections::HashMap;
-mod update;use crate::update::*;
-mod templates;use crate::templates::*;
+use warp::Filter;
+mod update;
+use crate::update::*;
+mod templates;
+use crate::templates::*;
 
 #[tokio::main]
 async fn main() {
-    let foods = init();
+    let foods = init().await;
     let mut keys: Vec<String> = foods.clone().into_keys().collect();
-        keys.sort_by_key(|name| name.to_lowercase());
+    keys.sort_by_key(|name| name.to_lowercase());
     let prods = Arc::new(Mutex::new(<Vec<String>>::new()));
     let word = Arc::new(Mutex::new(String::new()));
     let id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
@@ -39,24 +40,28 @@ async fn main() {
         move || {
             *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
             let prods = prods.lock().unwrap();
-            
+
             let y: Vec<String> = if !prods.is_empty() {
                 prods.to_vec()
             } else {
                 keys.clone()
             };
 
-            html(Index {
-                y,
-                foods: foods.clone(),
-                order: order.clone(),
-                entries: entries.clone(),
-                ind: *ind.lock().unwrap(),
-                showcol: *showcol.lock().unwrap(),
-                rng: id.lock().unwrap().to_string(),
-                word: word.lock().unwrap().to_string(),
-                active: active.lock().unwrap().to_vec(),
-            }.render_once().unwrap(),)
+            html(
+                Index {
+                    y,
+                    foods: foods.clone(),
+                    order: order.clone(),
+                    entries: entries.clone(),
+                    ind: *ind.lock().unwrap(),
+                    showcol: *showcol.lock().unwrap(),
+                    rng: id.lock().unwrap().to_string(),
+                    word: word.lock().unwrap().to_string(),
+                    active: active.lock().unwrap().to_vec(),
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -74,7 +79,11 @@ async fn main() {
                 let mut valid: Vec<String> = Vec::new();
                 let search = form[0].1.split(" ").collect::<Vec<&str>>();
                 for item in &keys {
-                    if search.iter().all(|term| item.to_lowercase().contains(&term.to_lowercase())) && !valid.contains(item) {
+                    if search
+                        .iter()
+                        .all(|term| item.to_lowercase().contains(&term.to_lowercase()))
+                        && !valid.contains(item)
+                    {
                         valid.push(item.to_string())
                     }
                 }
@@ -133,19 +142,18 @@ async fn main() {
             }
         });
 
-    let showcolumn = warp::path!("columns")
-        .map({
-            let showcol = showcol.clone();
-            move || {
-                let lol = *showcol.lock().unwrap();
-                if lol == false {
-                    *showcol.lock().unwrap() = true
-                } else {
-                    *showcol.lock().unwrap() = false
-                }
-                warp::redirect(Uri::from_static("/"))
+    let showcolumn = warp::path!("columns").map({
+        let showcol = showcol.clone();
+        move || {
+            let lol = *showcol.lock().unwrap();
+            if lol == false {
+                *showcol.lock().unwrap() = true
+            } else {
+                *showcol.lock().unwrap() = false
             }
-        });
+            warp::redirect(Uri::from_static("/"))
+        }
+    });
     let column = warp::path!("column")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
@@ -179,12 +187,16 @@ async fn main() {
         let order = order.clone();
         let foods = foods.clone();
         move |product: String| {
-            html(More {
-                multiplier: 1.0,
-                order: order.clone(),
-                foods: foods.clone(),
-                product: urlencoding::decode(&product).unwrap().to_string(),
-            }.render_once().unwrap())
+            html(
+                More {
+                    multiplier: 1.0,
+                    order: order.clone(),
+                    foods: foods.clone(),
+                    product: urlencoding::decode(&product).unwrap().to_string(),
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -196,12 +208,16 @@ async fn main() {
             let foods = foods.clone();
             move |form: Vec<(String, String)>| {
                 *id.lock().unwrap() = rand::thread_rng().gen::<u32>();
-                html(More {
-                    order: order.clone(),
-                    foods: foods.clone(),
-                    product: form[0].1.to_string(),
-                    multiplier: form[1].1.parse::<f32>().unwrap() / 100.,
-                }.render_once().unwrap())
+                html(
+                    More {
+                        order: order.clone(),
+                        foods: foods.clone(),
+                        product: form[0].1.to_string(),
+                        multiplier: form[1].1.parse::<f32>().unwrap() / 100.,
+                    }
+                    .render_once()
+                    .unwrap(),
+                )
             }
         });
 
@@ -210,11 +226,15 @@ async fn main() {
         let foods = foods.clone();
         let paperitems = paperitems.clone();
         move || {
-            html(Paper {
-                foods: foods.clone(),
-                rng: id.lock().unwrap().to_string(),
-                paperitems: paperitems.lock().unwrap().to_vec(),
-            }.render_once().unwrap())
+            html(
+                Paper {
+                    foods: foods.clone(),
+                    rng: id.lock().unwrap().to_string(),
+                    paperitems: paperitems.lock().unwrap().to_vec(),
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -270,9 +290,13 @@ async fn main() {
     let custom = warp::path("custom").map({
         let order = order.clone();
         move || {
-            html(Custom {
-                order: order.clone()
-            }.render_once().unwrap())
+            html(
+                Custom {
+                    order: order.clone(),
+                }
+                .render_once()
+                .unwrap(),
+            )
         }
     });
 
@@ -306,19 +330,41 @@ async fn main() {
             }
         });
 
-    let update = warp::path!("update").map({
-        || {
-            thread::spawn(|| update()).join().unwrap();
-            warp::redirect(Uri::from_static("/"))
+    let update_route = warp::path!("update").map({
+        move || {
+            let update_future = async {
+                match update().await {
+                    Ok(_) => {
+                        println!("[+] Updated!");
+                    }
+                    Err(e) => {
+                        println!("[-] Failed to update: {}", e);
+                    }
+                }
+                warp::redirect(Uri::from_static("/"))
+            };
+            tokio::spawn(update_future);
+            warp::reply::reply()
         }
     });
+    
 
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
     let routes = static_assets
-        .or(index).or(sort).or(search).or(change).or(column).or(showcolumn)
-        .or(paper).or(add).or(remove).or(clear)
-        .or(product).or(amount)
-        .or(custom).or(insert)
-        .or(update);
+        .or(index)
+        .or(sort)
+        .or(search)
+        .or(change)
+        .or(column)
+        .or(showcolumn)
+        .or(paper)
+        .or(add)
+        .or(remove)
+        .or(clear)
+        .or(product)
+        .or(amount)
+        .or(custom)
+        .or(insert)
+        .or(update_route);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }
