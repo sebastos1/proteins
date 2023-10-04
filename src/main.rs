@@ -1,14 +1,17 @@
 use http::Uri;
 use rand::Rng;
-use sailfish::TemplateOnce;
-use std::collections::HashMap;
+use warp::Filter;
 use std::sync::Arc;
 use std::sync::Mutex;
 use warp::reply::html;
-use warp::Filter;
+use urlencoding::decode;
+use sailfish::TemplateOnce;
+use std::collections::HashMap;
 mod update;
-use crate::update::*;
+mod helpers;
 mod templates;
+use crate::update::*;
+use crate::helpers::*;
 use crate::templates::*;
 
 #[tokio::main]
@@ -347,8 +350,26 @@ async fn main() {
             warp::reply::reply()
         }
     });
-    
 
+    let error = warp::path!("error" / String)
+    .map(|error: String| {
+        let decoded_error = match decode(&error) {
+            Ok(decoded) => decoded.into_owned(),
+            Err(_) => error,
+        };
+        println!("Displaying error page with error: {}", decoded_error);
+        html(
+            ErrorHtml {
+                error: { match Some(decoded_error) {
+                    Some(error) => error,
+                    None => "No error message".to_string(),
+                }}
+            }
+            .render_once()
+            .unwrap(),
+        )
+    });
+    
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
     let routes = static_assets
         .or(index)
@@ -365,6 +386,7 @@ async fn main() {
         .or(amount)
         .or(custom)
         .or(insert)
+        .or(error)
         .or(update_route);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

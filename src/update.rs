@@ -3,8 +3,7 @@ use tokio::fs::File;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use std::collections::HashMap;
-use crate::templates::trans;
-
+use crate::helpers::trans;
 
 pub async fn init() -> HashMap<String, HashMap<String, String>> {
     let mut foods: HashMap<String, HashMap<String, String>>;
