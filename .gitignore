@@ -2,3 +2,4 @@
 /util
 link.txt
 *.json
+!data/translations.json

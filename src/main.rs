@@ -298,7 +298,7 @@ async fn main() {
         }
     });
 
-    // submitting doesnt work yet
+    // submitting doesnt work yet, broken cause of the swap to dictionary
     let custom = warp::path("custom").map({
         let dictionary = dictionary.clone();
         move || {
