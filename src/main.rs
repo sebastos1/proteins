@@ -15,6 +15,10 @@ use crate::templates::*;
 
 #[tokio::main]
 async fn main() {
+    // food dictionary: id { unit, parent, order_pos, en, no }
+    let dictionary = load_dictionary();
+    // println!("{:#?}", dictionary);
+
     // food data
     let food_data_map = init().await;
     let mut food_names: Vec<String> = food_data_map.clone().into_keys().collect();
@@ -23,7 +27,6 @@ async fn main() {
     
     // ordering
     let currently_sorting_by = Arc::new(Mutex::new(String::new()));
-    let nutrient_order = get_nutrient_order();
 
     // scrolling
     let entries_cursor = Arc::new(Mutex::new(0));
@@ -41,7 +44,7 @@ async fn main() {
         let entries_cursor = entries_cursor.clone();
         let food_names = food_names.clone();
         let currently_sorting_by = currently_sorting_by.clone();
-        let nutrient_order = nutrient_order.clone();
+        let dictionary = dictionary.clone();
         let foods_currently_shown = foods_currently_shown.clone();
         let food_data_map = food_data_map.clone();
         let active_columns = active_columns.clone();
@@ -61,7 +64,7 @@ async fn main() {
                 Index {
                     y,
                     food_data_map: food_data_map.clone(),
-                    nutrient_order: nutrient_order.clone(),
+                    dictionary: dictionary.clone(),
                     entries_per_page: entries_per_page.clone(),
                     entries_cursor: *entries_cursor.lock().unwrap(),
                     show_column_settings: *show_column_settings.lock().unwrap(),
@@ -141,8 +144,6 @@ async fn main() {
                     *currently_sorting_by = format!("{} (desc.)", form[0].1.clone());
                 }
 
-                println!("{:?}", currently_sorting_by);
-
                 for item in collected {
                     sorted.push(item.0)
                 }
@@ -194,13 +195,13 @@ async fn main() {
         });
 
     let product = warp::path("product").and(warp::path::param()).map({
-        let nutrient_order = nutrient_order.clone();
+        let dictionary = dictionary.clone();
         let food_data_map = food_data_map.clone();
         move |product: String| {
             html(
                 More {
                     multiplier: 1.0,
-                    nutrient_order: nutrient_order.clone(),
+                    dictionary: dictionary.clone(),
                     food_data_map: food_data_map.clone(),
                     product: urlencoding::decode(&product).unwrap().to_string(),
                 }
@@ -214,13 +215,13 @@ async fn main() {
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let unique_id = unique_id.clone();
-            let nutrient_order = nutrient_order.clone();
+            let dictionary = dictionary.clone();
             let food_data_map = food_data_map.clone();
             move |form: Vec<(String, String)>| {
                 *unique_id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 html(
                     More {
-                        nutrient_order: nutrient_order.clone(),
+                        dictionary: dictionary.clone(),
                         food_data_map: food_data_map.clone(),
                         product: form[0].1.to_string(),
                         multiplier: form[1].1.parse::<f32>().unwrap() / 100.,
@@ -297,12 +298,13 @@ async fn main() {
         }
     });
 
+    // submitting doesnt work yet
     let custom = warp::path("custom").map({
-        let nutrient_order = nutrient_order.clone();
+        let dictionary = dictionary.clone();
         move || {
             html(
                 Custom {
-                    nutrient_order: nutrient_order.clone(),
+                    dictionary: dictionary.clone(),
                 }
                 .render_once()
                 .unwrap(),
@@ -325,16 +327,16 @@ async fn main() {
                 );
 
                 let mut food: HashMap<String, HashMap<String, String>>;
-                if std::path::Path::new("custom.json").exists()
-                    && std::fs::read_to_string("custom.json").unwrap() != ""
+                if std::path::Path::new("data/custom.json").exists()
+                    && std::fs::read_to_string("data/custom.json").unwrap() != ""
                 {
-                    food = serde_json::from_str(&std::fs::read_to_string("custom.json").unwrap())
+                    food = serde_json::from_str(&std::fs::read_to_string("data/custom.json").unwrap())
                         .unwrap();
                 } else {
                     food = HashMap::new();
                 }
                 food.insert(form[0].1.to_string(), nutrients);
-                let file = std::fs::File::create("custom.json").unwrap();
+                let file = std::fs::File::create("data/custom.json").unwrap();
                 serde_json::to_writer(file, &food).unwrap();
                 warp::redirect(Uri::from_static("/"))
             }

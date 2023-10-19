@@ -24,10 +24,10 @@
                 <div class="colticks">
                     <form action="column">
                         <input type="hidden" name="id" value="<%= rng %>">
-                        <% for (item, _) in nutrient_order { %>
-                            <b><%= item %>:</b>
-                            <input class="tick" type="checkbox" name="<%= item %>"
-                            <% if active_columns.contains(&item.to_string()) { %>
+                        <% for (nutrient_id, nutrient_map) in dictionary { %>
+                            <b><%= nutrient_map["no"] %>:</b>
+                            <input class="tick" type="checkbox" name="<%= nutrient_id %>"
+                            <% if active_columns.contains(&nutrient_id.to_string()) { %>
                                 value="1" checked
                             <% } %>
                             >

@@ -23,28 +23,28 @@
                     <td></td>
                 </tr>
             </thead>
-            <% for (item, unit) in nutrient_order { %>
-                <% if food_data_map[&product].contains_key(item) { %>
+
+
+            <% for (nutrient_id, nutrient_dict_hashmap) in dictionary { %>
+                <% if food_data_map[&product].contains_key(&nutrient_id) { %>
                     <tr>
-                        <% if item == "Protein" || item == "Fett" || item == "Karbohydrater" { %>
-                            <td><b><%= item %></b></td>
-                        <% } else if vec!["Mettet fett", "Transfett", "Enumettet fett", "Flerumettet fett", "Kolesterol", "Stivelse", "Mono- & disakkarider", "Sukkerarter", "Retinol", "Betakaroten"].contains(&item) { %>
-                            <td><i>&nbsp;&nbsp;<%= item %></i></td>
-                        <% } else if vec!["Laurinsyre (C12:0)","Myristinsyre (C14:0)","Palmitinsyre (C16:0)","Stearinsyre (C18:0)","C16:1 sum","C18:1 sum","Linolsyre (C18:2n-6)","Alfalinolensyre (C18:3n-3)","Eikosatriensyre (C20:3n-3)","Dihomogammalinolensyre (C20:3n-6)","Eikosatetraensyre (C20:4n-3)","Arakidonsyre (C20:4n-6)","Eikosapentaensyre (C20:5n-3)","Dokosapentaensyre (C22:5n-3)","Dokosaheksaensyre (C22:6n-3)","Omega-3","Omega-6"].contains(&item) { %>
-                            <td><i>&nbsp;&nbsp;&nbsp;&nbsp;<%= item %></i></td>
+                        <% if vec!["protein", "fat", "carb"].contains(&&nutrient_id.as_str()) { %>
+                            <td><b><%= nutrient_dict_hashmap["no"] %></b></td>
+                        <% } else if nutrient_dict_hashmap["parent"] != "" { %> 
+                            <td><i>&nbsp;&nbsp;<%= nutrient_dict_hashmap["no"] %></i></td>
                         <% } else {%>
-                            <td><%= item %></td>
+                            <td><%= nutrient_dict_hashmap["no"] %></td>
                         <% } %>
 
                         <% let prec: usize; %>
-                        <% if item != "Omega-3" && unit == "g" || unit == "mg-ATE" || unit == "µg" || unit == "µg-RE" { %>
+                        <% if vec!["g", "µg"].contains(&&nutrient_dict_hashmap["unit"].as_str()) { %>
                             <% prec = 1; %>
-                        <% } else if unit == "mg" || item == "Omega-3" { %>
+                        <% } else if &nutrient_dict_hashmap["unit"] == "mg" { %>
                             <% prec = 2; %>
                         <% } else { %>
                             <% prec = 0; %>
                         <% } %>
-                        <td><%= (format!("{} {}", format!("{:.prec$}", (food_data_map[&product][item].parse::<f32>().unwrap() * multiplier)), unit)) %></td>
+                        <td><%= (format!("{} {}", format!("{:.prec$}", (food_data_map[&product][&nutrient_id].parse::<f32>().unwrap() * multiplier)), nutrient_dict_hashmap["unit"])) %></td>
                     </tr>
                  <% } %>
             <% } %>

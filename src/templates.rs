@@ -1,9 +1,10 @@
 use sailfish::TemplateOnce;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 #[derive(TemplateOnce)]
 #[template(path = "index.html")]
-pub struct Index<'a> {
+pub struct Index {
     pub entries_cursor: usize,
     pub rng: String,
     pub currently_sorting_by: String,
@@ -11,16 +12,16 @@ pub struct Index<'a> {
     pub y: Vec<String>,
     pub entries_per_page: usize,
     pub active_columns: Vec<String>,
-    pub nutrient_order: Vec<(&'a str, &'a str)>,
+    pub dictionary: IndexMap<String, HashMap<String, String>>,
     pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "more.html")]
-pub struct More<'a> {
+pub struct More {
     pub product: String,
     pub multiplier: f32,
-    pub nutrient_order: Vec<(&'a str, &'a str)>,
+    pub dictionary: IndexMap<String, HashMap<String, String>>,
     pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
 
@@ -34,8 +35,8 @@ pub struct Paper {
 
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
-pub struct Custom<'a> {
-    pub nutrient_order: Vec<(&'a str, &'a str)>,
+pub struct Custom {
+    pub dictionary: IndexMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]

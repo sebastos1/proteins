@@ -1,4 +1,4 @@
 /target
+/util
 link.txt
-output.json
-custom.json
+*.json

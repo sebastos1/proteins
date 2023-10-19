@@ -3,12 +3,14 @@ use tokio::fs::File;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use std::collections::HashMap;
-use crate::helpers::get_long_names;
+use crate::helpers::convert_id;
 
 pub async fn init() -> HashMap<String, HashMap<String, String>> {
     let mut foods: HashMap<String, HashMap<String, String>>;
 
-    match std::fs::read_to_string("output.json") {
+    let path = "data/output.json";
+
+    match std::fs::read_to_string(path) {
         Ok(file_content) => {
             match serde_json::from_str(&file_content) {
                 Ok(data) => {
@@ -18,7 +20,7 @@ pub async fn init() -> HashMap<String, HashMap<String, String>> {
                     println!("[-] Bad data, creating new ...");
                     match update().await {
                         Ok(_) => {
-                            foods = try_read_foods("output.json").await;
+                            foods = try_read_foods(path).await;
                         },
                         Err(e) => {
                             println!("[-] Failed to update data, exiting: {}", e);
@@ -32,7 +34,7 @@ pub async fn init() -> HashMap<String, HashMap<String, String>> {
             println!("[-] No data, creating...");
             match update().await {
                 Ok(_) => {
-                    foods = try_read_foods("output.json").await;
+                    foods = try_read_foods(path).await;
                 },
                 Err(e) => {
                     println!("[-] Failed to update data, exiting: {}", e);
@@ -42,11 +44,13 @@ pub async fn init() -> HashMap<String, HashMap<String, String>> {
         }
     }
 
-    if std::path::Path::new("custom.json").exists() {
-        match fs::read_to_string("custom.json").await {
+    let path = "data/custom.json";
+
+    if std::path::Path::new(path).exists() {
+        match fs::read_to_string(path).await {
             Ok(_) => {
                 let custom_foods: HashMap<String, HashMap<String, String>> =
-                    try_read_foods("custom.json").await;
+                    try_read_foods(path).await;
                 for (k, v) in custom_foods.iter() {
                     foods.insert(k.to_string(), v.clone());
                 }
@@ -120,18 +124,16 @@ pub async fn update() -> Result<(), String> {
                     if let Some(x) = string.find(".") {
                         string = &string[0..x];
                     };
-                    println!("{} {}", $nutrient_name, string);
                     nutrients.insert($nutrient_name, string);
                 }
             };
         }
 
-        for (new_name, old_code) in get_long_names(language) {
-            if new_name == "kJ" || new_name == "kcal" {
-                floor!(new_name, old_code);
+        for (old_code, new_code) in convert_id() {
+            if new_code == "kJ" || new_code == "kcal" {
+                floor!(new_code, old_code);
             } else {
-                println!("{} {}", new_name, old_code);
-                insert!(new_name, old_code);
+                insert!(new_code, old_code);
             }
         }
 
@@ -161,7 +163,7 @@ pub async fn update() -> Result<(), String> {
 }
 
 async fn write_foods(foods: &HashMap<&str, HashMap<&str, &str>>) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = File::create("output.json").await?;
+    let mut file = File::create("data/output.json").await?;
     let json_data = serde_json::to_string(foods)?;
     file.write_all(json_data.as_bytes()).await?;
     Ok(())

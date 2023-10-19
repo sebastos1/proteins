@@ -5,12 +5,12 @@
         <form action="/insert">
             <div class="inserts">
                 <input type="text" name="Name" value="" placeholder="Name">
-                <% for (item, unit) in nutrient_order { %>
-                    <input type="number" step="any" name="<%= item %>" value=""
-                    <% if item != unit { %>
-                        placeholder="<%= item %> (<%= unit %>)"
+                <% for (nutrient_id, nutrient_map) in dictionary { %>
+                    <input type="number" step="any" name="<%= nutrient_id %>" value=""
+                    <% if nutrient_id != nutrient_map["unit"] { %>
+                        placeholder="<%= nutrient_map["no"] %> (<%= nutrient_map["unit"] %>)"
                     <% } else { %>
-                        placeholder="<%= item %>"
+                        placeholder="<%= nutrient_map["no"] %>"
                     <% } %>
                     >
                 <% } %>
