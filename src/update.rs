@@ -3,7 +3,7 @@ use tokio::fs::File;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use std::collections::HashMap;
-use crate::helpers::trans;
+use crate::helpers::get_long_names;
 
 pub async fn init() -> HashMap<String, HashMap<String, String>> {
     let mut foods: HashMap<String, HashMap<String, String>>;
@@ -25,7 +25,6 @@ pub async fn init() -> HashMap<String, HashMap<String, String>> {
                             std::process::exit(1);
                         }
                     };
-                    
                 }
             }
         }
@@ -71,6 +70,19 @@ pub async fn update() -> Result<(), String> {
     };
     let source = "MVT"; // url.clone();
 
+    // infer language from the link ?langauge=no or en
+    let language = match url.find("language=") {
+        Some(x) => {
+            let mut lang = &url[x + 9..x + 11];
+            if lang.contains("&") {
+                lang = &lang[0..1];
+            }
+            lang
+        }
+        None => "en",
+    };
+    println!("[*] Language: {}", language);
+
     let res = match fetch_data(&url).await {
         Ok(res) => res,
         Err(e) => {
@@ -93,31 +105,33 @@ pub async fn update() -> Result<(), String> {
         let mut nutrients = HashMap::new();
 
         macro_rules! insert {
-            ($a:expr, $b:expr) => {
-                if let Some(string) = map["foods"][x][$b]["value"].as_str() {
+            ($nutrient_name:expr, $nutrient_code:expr) => {
+                if let Some(string) = map["foods"][x][$nutrient_code]["value"].as_str() {
                     if string != "0" && !string.is_empty() {
-                        nutrients.insert($a, string);
+                        nutrients.insert($nutrient_name, string);
                     }
                 }
             };
         }
 
         macro_rules! floor {
-            ($a:expr, $b:expr) => {
-                if let Some(mut string) = map["foods"][x][$b]["value"].as_str() {
+            ($nutrient_name:expr, $nutrient_code:expr) => {
+                if let Some(mut string) = map["foods"][x][$nutrient_code]["value"].as_str() {
                     if let Some(x) = string.find(".") {
                         string = &string[0..x];
                     };
-                    nutrients.insert($a, string);
+                    println!("{} {}", $nutrient_name, string);
+                    nutrients.insert($nutrient_name, string);
                 }
             };
         }
 
-        for (k, v) in trans() {
-            if k == "kJ" || k == "kcal" {
-                floor!(k, v);
+        for (new_name, old_code) in get_long_names(language) {
+            if new_name == "kJ" || new_name == "kcal" {
+                floor!(new_name, old_code);
             } else {
-                insert!(k, v);
+                println!("{} {}", new_name, old_code);
+                insert!(new_name, old_code);
             }
         }
 

@@ -4,15 +4,15 @@ use std::collections::HashMap;
 #[derive(TemplateOnce)]
 #[template(path = "index.html")]
 pub struct Index<'a> {
-    pub ind: usize,
+    pub entries_cursor: usize,
     pub rng: String,
-    pub word: String,
-    pub showcol: bool,
+    pub currently_sorting_by: String,
+    pub show_column_settings: bool,
     pub y: Vec<String>,
-    pub entries: usize,
-    pub active: Vec<String>,
-    pub order: Vec<(&'a str, &'a str)>,
-    pub foods: HashMap<String, HashMap<String, String>>,
+    pub entries_per_page: usize,
+    pub active_columns: Vec<String>,
+    pub nutrient_order: Vec<(&'a str, &'a str)>,
+    pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
@@ -20,22 +20,22 @@ pub struct Index<'a> {
 pub struct More<'a> {
     pub product: String,
     pub multiplier: f32,
-    pub order: Vec<(&'a str, &'a str)>,
-    pub foods: HashMap<String, HashMap<String, String>>,
+    pub nutrient_order: Vec<(&'a str, &'a str)>,
+    pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "paper.html")]
 pub struct Paper {
     pub rng: String,
-    pub paperitems: Vec<(String, f32)>,
-    pub foods: HashMap<String, HashMap<String, String>>,
+    pub custom_meal_items: Vec<(String, f32)>,
+    pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
 #[template(path = "custom.html")]
 pub struct Custom<'a> {
-    pub order: Vec<(&'a str, &'a str)>,
+    pub nutrient_order: Vec<(&'a str, &'a str)>,
 }
 
 #[derive(TemplateOnce)]

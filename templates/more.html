@@ -23,14 +23,14 @@
                     <td></td>
                 </tr>
             </thead>
-            <% for (item, unit) in order { %>
-                <% if foods[&product].contains_key(item) { %>
+            <% for (item, unit) in nutrient_order { %>
+                <% if food_data_map[&product].contains_key(item) { %>
                     <tr>
                         <% if item == "Protein" || item == "Fett" || item == "Karbohydrater" { %>
                             <td><b><%= item %></b></td>
-                        <% } else if item.contains("ettet fett") || item == "Sukkerarter" || item == "Stivelse" { %>
+                        <% } else if vec!["Mettet fett", "Transfett", "Enumettet fett", "Flerumettet fett", "Kolesterol", "Stivelse", "Mono- & disakkarider", "Sukkerarter", "Retinol", "Betakaroten"].contains(&item) { %>
                             <td><i>&nbsp;&nbsp;<%= item %></i></td>
-                        <% } else if item == "Omega-3" || item == "Omega-6" { %>
+                        <% } else if vec!["Laurinsyre (C12:0)","Myristinsyre (C14:0)","Palmitinsyre (C16:0)","Stearinsyre (C18:0)","C16:1 sum","C18:1 sum","Linolsyre (C18:2n-6)","Alfalinolensyre (C18:3n-3)","Eikosatriensyre (C20:3n-3)","Dihomogammalinolensyre (C20:3n-6)","Eikosatetraensyre (C20:4n-3)","Arakidonsyre (C20:4n-6)","Eikosapentaensyre (C20:5n-3)","Dokosapentaensyre (C22:5n-3)","Dokosaheksaensyre (C22:6n-3)","Omega-3","Omega-6"].contains(&item) { %>
                             <td><i>&nbsp;&nbsp;&nbsp;&nbsp;<%= item %></i></td>
                         <% } else {%>
                             <td><%= item %></td>
@@ -44,7 +44,7 @@
                         <% } else { %>
                             <% prec = 0; %>
                         <% } %>
-                        <td><%= (format!("{} {}", format!("{:.prec$}", (foods[&product][item].parse::<f32>().unwrap() * multiplier)), unit)) %></td>
+                        <td><%= (format!("{} {}", format!("{:.prec$}", (food_data_map[&product][item].parse::<f32>().unwrap() * multiplier)), unit)) %></td>
                     </tr>
                  <% } %>
             <% } %>

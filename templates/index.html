@@ -20,14 +20,14 @@
                 </form>
             </div>
             
-            <% if showcol { %>
+            <% if show_column_settings { %>
                 <div class="colticks">
                     <form action="column">
                         <input type="hidden" name="id" value="<%= rng %>">
-                        <% for (item, _) in order { %>
+                        <% for (item, _) in nutrient_order { %>
                             <b><%= item %>:</b>
                             <input class="tick" type="checkbox" name="<%= item %>"
-                            <% if active.contains(&item.to_string()) { %>
+                            <% if active_columns.contains(&item.to_string()) { %>
                                 value="1" checked
                             <% } %>
                             >
@@ -37,15 +37,15 @@
                 </div>
             <% } %>
 
-            <% if word != "" { %>
-                <h3 class="sorttype">Sorting by: <%= word%></h3>
+            <% if currently_sorting_by != "" { %>
+                <h3 class="sorttype">Sorting by: <%= currently_sorting_by%></h3>
             <% } else { %>
                 <h3 class="sorttype">Not sorting</h3>
             <% } %>
             <table class="biglist">
                 <thead>
                     <td></td>
-                    <% for item in &active { %>
+                    <% for item in &active_columns { %>
                         <td>
                             <form action="/sort" >
                                 <input type="hidden" name="sortby" value="<%= item %>">
@@ -57,24 +57,24 @@
                 </thead>
         
                 <% let end: usize; %>
-                <% let ind = ind; %>
+                <% let entries_cursor = entries_cursor; %>
         
-                <% if y.len() < entries { %>
+                <% if y.len() < entries_per_page { %>
                     <% end = y.len(); %>
-                <% } else if ind >= y.len()-entries { %>
+                <% } else if entries_cursor >= y.len()-entries_per_page { %>
                     <% end = y.len(); %>
                 <% } else { %>
-                    <% end = ind + entries; %>
+                    <% end = entries_cursor + entries_per_page; %>
                 <% } %>
         
                 <% if y.is_empty() { %>
                     <p>No results.</p>
                 <% } else { %>
-                    <% for k in &y[ind..end] { %>
+                    <% for k in &y[entries_cursor..end] { %>
                             <td class="prodname"><a href="/product/<%= k %>"><%= k %></a></td>
-                            <% for entry in &active { %>
-                                <% if foods[k].contains_key(&entry.to_string()) && foods[k][&entry.to_string()] != ""  { %>
-                                    <td class="prodval"><%= foods[k][&entry.to_string()] %></td>
+                            <% for entry in &active_columns { %>
+                                <% if food_data_map[k].contains_key(&entry.to_string()) && food_data_map[k][&entry.to_string()] != ""  { %>
+                                    <td class="prodval"><%= food_data_map[k][&entry.to_string()] %></td>
                                 <% } else { %>
                                     <td class="prodval"><%= "0" %></td>
                                 <% } %>
@@ -85,7 +85,7 @@
             </table>
             <div class="pagebuttons">
                 <div class="prev">
-                    <% if ind >= entries { %>
+                    <% if entries_cursor >= entries_per_page { %>
                         <form action="/change">
                             <input type="hidden" name="goto" value="down">
                             <input type="hidden" name="id" value="<%= rng %>">
@@ -95,10 +95,10 @@
                 </div>
                 <div class="foodcount">
                     <p><%= &y.len() %> results</p>
-                    <p>Page <%= ind / entries + 1   %> / <%= y.len() / entries + 1 %></p>
+                    <p>Page <%= entries_cursor / entries_per_page + 1   %> / <%= y.len() / entries_per_page + 1 %></p>
                 </div>
                 <div class="next">
-                    <% if y.len() > entries && ind < y.len()-entries { %>
+                    <% if y.len() > entries_per_page && entries_cursor < y.len()-entries_per_page { %>
                         <form action="/change" class="next">
                             <input type="hidden" name="goto" value="up">
                             <input type="hidden" name="id" value="<%= rng %>">
@@ -109,6 +109,6 @@
             </div>
         </div>
     </div>
-    <a href="/update" class="upd">Update</a>
+    <a href="/update/<%= rng %>" class="upd">Update</a>
   </body>
 </html>

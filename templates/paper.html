@@ -1,7 +1,7 @@
 <% include!("./header.html"); %>
     <body>
         <a href="/">Table</a>
-        <% if paperitems.is_empty() { %>
+        <% if custom_meal_items.is_empty() { %>
             <p>Nothing to show yet</p>
         <% } else { %>
             <table>
@@ -13,18 +13,18 @@
                 <th>Fat</th>
                 <th></th>
             </tr>
-            <% for (product, multiplier) in &paperitems { %>
+            <% for (product, multiplier) in &custom_meal_items { %>
                 <tr>
                     <td><%= product %> (<%= format!("{:.1}", multiplier * 100.).replace(".0", "") %> g)</td>
-                <% if foods[product].contains_key("kJ") && foods[product].contains_key("kcal") { %>
-                    <td><%= format!("{:.0} kJ", foods[product]["kJ"].parse::<f32>().unwrap() * multiplier) %> / <%= format!("{:.0} kcal", foods[product]["kcal"].parse::<f32>().unwrap() * multiplier) %></td>
+                <% if food_data_map[product].contains_key("kJ") && food_data_map[product].contains_key("kcal") { %>
+                    <td><%= format!("{:.0} kJ", food_data_map[product]["kJ"].parse::<f32>().unwrap() * multiplier) %> / <%= format!("{:.0} kcal", food_data_map[product]["kcal"].parse::<f32>().unwrap() * multiplier) %></td>
                 <% } else { %>
                     <td>0 kJ / 0 kcal</td>
                 <% } %>
 
                 <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
-                    <% if foods[product].contains_key(item) { %>
-                        <td><%= format!("{:.1} g", foods[product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
+                    <% if food_data_map[product].contains_key(item) { %>
+                        <td><%= format!("{:.1} g", food_data_map[product][item].parse::<f32>().unwrap() * multiplier).replace(".0", "") %></td>
                     <% } else { %>
                         <td>0 g</td>
                     <% } %>
@@ -41,7 +41,7 @@
             
             <tfoot>
                 <% let mut sum: f32 = 0.; %>
-                <% for (_product, multiplier) in &paperitems { %>
+                <% for (_product, multiplier) in &custom_meal_items { %>
                     <% sum = sum + 100. * multiplier; %>
                 <% } %>
                 <td>Total (<%= format!("{:.1}", sum).replace(".0", "") %> g)</td>
@@ -49,18 +49,18 @@
                 <td>
                 <% let mut kj: f32 = 0.; %>
                 <% let mut kcal: f32 = 0.; %>
-                <% for (product, multiplier) in &paperitems { %>
-                    <% kj = kj + foods[&product.to_string()]["kJ"].parse::<f32>().unwrap() * multiplier; %>
-                    <% kcal = kcal + foods[&product.to_string()]["kcal"].parse::<f32>().unwrap() * multiplier; %>
+                <% for (product, multiplier) in &custom_meal_items { %>
+                    <% kj = kj + food_data_map[&product.to_string()]["kJ"].parse::<f32>().unwrap() * multiplier; %>
+                    <% kcal = kcal + food_data_map[&product.to_string()]["kcal"].parse::<f32>().unwrap() * multiplier; %>
                 <% } %>
                 <%= format!("{:.0} kJ / {:.0} kcal", kj, kcal) %>
                 </td>
 
                 <% for item in ["Protein", "Karbohydrater", "Fett"] { %>
                     <% let mut sum: f32 = 0.; %>
-                    <% for (product, multiplier) in &paperitems { %>
-                        <% if foods[&product.to_string()].contains_key(item) { %>
-                            <% sum = sum + foods[&product.to_string()][item].parse::<f32>().unwrap() * multiplier; %>
+                    <% for (product, multiplier) in &custom_meal_items { %>
+                        <% if food_data_map[&product.to_string()].contains_key(item) { %>
+                            <% sum = sum + food_data_map[&product.to_string()][item].parse::<f32>().unwrap() * multiplier; %>
                         <% } %>
                     <% } %>
                     <td><%= format!("{:.1} g", sum).replace(".0", "") %></td>
