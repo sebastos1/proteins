@@ -17,7 +17,6 @@ use crate::templates::*;
 async fn main() {
     // food dictionary: id { unit, parent, order_pos, en, no }
     let dictionary = load_dictionary();
-    // println!("{:#?}", dictionary);
 
     // food data
     let food_data_map = init().await;

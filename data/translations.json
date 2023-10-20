@@ -39,7 +39,8 @@
         "unit": "g",
         "no": "Laurinsyre (C12:0)",
         "en": "Lauric acid (C12:0)",
-        "parent": "saturated_fat"    },
+        "parent": "saturated_fat"
+    },
     "myristic_acid": {
         "unit": "g",
         "no": "Myristinsyre (C14:0)",

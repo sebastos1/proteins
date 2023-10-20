@@ -24,16 +24,22 @@
                 </tr>
             </thead>
 
-
-            <% for (nutrient_id, nutrient_dict_hashmap) in dictionary { %>
-                <% if food_data_map[&product].contains_key(&nutrient_id) { %>
+            <% for (nutrient_id, nutrient_dict_hashmap) in &dictionary { %>
+                <% if food_data_map[&product].contains_key(nutrient_id) { %>
                     <tr>
                         <% if vec!["protein", "fat", "carb"].contains(&&nutrient_id.as_str()) { %>
                             <td><b><%= nutrient_dict_hashmap["no"] %></b></td>
-                        <% } else if nutrient_dict_hashmap["parent"] != "" { %> 
-                            <td><i>&nbsp;&nbsp;<%= nutrient_dict_hashmap["no"] %></i></td>
-                        <% } else {%>
-                            <td><%= nutrient_dict_hashmap["no"] %></td>
+                        <% } else { %>
+                            <td>
+                            <% if nutrient_dict_hashmap["parent"] != "" { %>
+                                &nbsp;&nbsp;
+
+                                <% if dictionary[&nutrient_dict_hashmap["parent"]]["parent"] != "" { %>
+                                    &nbsp;&nbsp;
+                                <% } %>
+                            <% } %>
+
+                            <%= nutrient_dict_hashmap["no"] %></td>
                         <% } %>
 
                         <% let prec: usize; %>
@@ -44,7 +50,7 @@
                         <% } else { %>
                             <% prec = 0; %>
                         <% } %>
-                        <td><%= (format!("{} {}", format!("{:.prec$}", (food_data_map[&product][&nutrient_id].parse::<f32>().unwrap() * multiplier)), nutrient_dict_hashmap["unit"])) %></td>
+                        <td><%= (format!("{} {}", format!("{:.prec$}", (food_data_map[&product][nutrient_id].parse::<f32>().unwrap() * multiplier)), nutrient_dict_hashmap["unit"])) %></td>
                     </tr>
                  <% } %>
             <% } %>

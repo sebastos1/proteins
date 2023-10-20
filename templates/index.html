@@ -24,7 +24,7 @@
                 <div class="colticks">
                     <form action="column">
                         <input type="hidden" name="id" value="<%= rng %>">
-                        <% for (nutrient_id, nutrient_map) in dictionary { %>
+                        <% for (nutrient_id, nutrient_map) in dictionary.clone() { %>
                             <b><%= nutrient_map["no"] %>:</b>
                             <input class="tick" type="checkbox" name="<%= nutrient_id %>"
                             <% if active_columns.contains(&nutrient_id.to_string()) { %>
@@ -50,7 +50,7 @@
                             <form action="/sort" >
                                 <input type="hidden" name="sortby" value="<%= item %>">
                                 <input type="hidden" name="id" value="<%= rng %>">
-                                <input type="submit" value="<%= item %>" class="sortbutton">
+                                <input type="submit" value="<%= dictionary[item]["no"].clone() %>" class="sortbutton">
                             </form>
                         </td>
                     <% } %>
