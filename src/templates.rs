@@ -5,13 +5,14 @@ use indexmap::IndexMap;
 #[derive(TemplateOnce)]
 #[template(path = "index.html")]
 pub struct Index {
-    pub entries_cursor: usize,
     pub rng: String,
-    pub currently_sorting_by: String,
-    pub show_column_settings: bool,
-    pub y: Vec<String>,
+    pub language: String,
+    pub entries_cursor: usize,
     pub entries_per_page: usize,
+    pub show_column_settings: bool,
+    pub foods_to_show: Vec<String>,
     pub active_columns: Vec<String>,
+    pub currently_sorting_by: String,
     pub dictionary: IndexMap<String, HashMap<String, String>>,
     pub food_data_map: HashMap<String, HashMap<String, String>>,
 }
@@ -21,6 +22,7 @@ pub struct Index {
 pub struct More {
     pub product: String,
     pub multiplier: f32,
+    pub language: String,
     pub dictionary: IndexMap<String, HashMap<String, String>>,
     pub food_data_map: HashMap<String, HashMap<String, String>>,
 }

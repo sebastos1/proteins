@@ -1,31 +1,49 @@
 <% include!("./header.html"); %>
   <body class="indexbody">
     <div class="mayn">
-        <div class="tablecontainer">
-            <div class="buttons">
-                <form action="/custom">
-                    <input type="submit" value="Add product" />
-                </form>
-                <form action="/paper">
-                    <input type="submit" value="Custom list" />
-                </form>
-                <form action="/search" class="searchbutton">
-                    <input type="text" name="search" value="" placeholder="Search">
-                    <input type="hidden" name="id" value="<%= rng %>">
-                    <input type="submit" class="hiddensubmit">
-                </form>
-                <form action="/columns">
-                    <input type="hidden" name="id" value="<%= rng %>">
-                    <input type="submit" value="Edit columns">
-                </form>
-            </div>
-            
+        <div class="buttons">
+            <form action="/custom">
+                <input type="submit" value="Add product" />
+            </form>
+
+            <form action="/paper">
+                <input type="submit" value="Custom list" />
+            </form>
+
+            <form action="/search" class="searchbutton">
+                <input type="text" name="search" value="" placeholder="Search">
+                <input type="hidden" name="id" value="<%= rng %>">
+                <input type="submit" class="hiddensubmit">
+            </form>
+
+            <form action="/columns">
+                <input type="hidden" name="id" value="<%= rng %>">
+                <input type="submit" value="Edit columns">
+            </form>
+
+            <form action="/toggle_lang">
+                <input type="hidden" name="id" value="<%= rng %>">
+                <button class="flag_button" type="submit">
+                    <% if language == "no" { %>
+                        <img src="static/norway_flag.svg"><h3>Norsk</h3>
+                    <% } else { %>
+                        <img src="static/english_flag.svg"><h3>English</h3>
+                    <% } %>
+                </button>
+            </form>
+        </div>
+
+        <div class="tablecontainer">            
             <% if show_column_settings { %>
                 <div class="colticks">
                     <form action="column">
                         <input type="hidden" name="id" value="<%= rng %>">
-                        <% for (nutrient_id, nutrient_map) in dictionary.clone() { %>
-                            <b><%= nutrient_map["no"] %>:</b>
+                        <% for (nutrient_id, nutrient_map) in &dictionary { %>
+                            <% if nutrient_map["parent"] != "" { %>
+                                <% continue; %>
+                            <% } %>
+
+                            <b><%= nutrient_map[&language] %>:</b>
                             <input class="tick" type="checkbox" name="<%= nutrient_id %>"
                             <% if active_columns.contains(&nutrient_id.to_string()) { %>
                                 value="1" checked
@@ -50,7 +68,7 @@
                             <form action="/sort" >
                                 <input type="hidden" name="sortby" value="<%= item %>">
                                 <input type="hidden" name="id" value="<%= rng %>">
-                                <input type="submit" value="<%= dictionary[item]["no"].clone() %>" class="sortbutton">
+                                <input type="submit" value="<%= dictionary[item][&language].clone() %>" class="sortbutton">
                             </form>
                         </td>
                     <% } %>
@@ -59,19 +77,29 @@
                 <% let end: usize; %>
                 <% let entries_cursor = entries_cursor; %>
         
-                <% if y.len() < entries_per_page { %>
-                    <% end = y.len(); %>
-                <% } else if entries_cursor >= y.len()-entries_per_page { %>
-                    <% end = y.len(); %>
+                <% if foods_to_show.len() < entries_per_page { %>
+                    <% end = foods_to_show.len(); %>
+                <% } else if entries_cursor >= foods_to_show.len()-entries_per_page { %>
+                    <% end = foods_to_show.len(); %>
                 <% } else { %>
                     <% end = entries_cursor + entries_per_page; %>
                 <% } %>
         
-                <% if y.is_empty() { %>
+                <% if foods_to_show.is_empty() { %>
                     <p>No results.</p>
                 <% } else { %>
-                    <% for k in &y[entries_cursor..end] { %>
-                            <td class="prodname"><a href="/product/<%= k %>"><%= k %></a></td>
+                    <% for k in &foods_to_show[entries_cursor..end] { %>
+                            <td class="prodname"><a href="/product/<%= k %>">
+                                <% if language != "no" { %>
+                                    <% if food_data_map[k].contains_key("en") { %>
+                                        <%= food_data_map[k]["en"].clone() %>
+                                    <% } else { %>
+                                        <%= k %>
+                                    <% } %>
+                                <% } else { %>
+                                    <%= k %>
+                                <% } %>
+                                </a></td>
                             <% for entry in &active_columns { %>
                                 <% if food_data_map[k].contains_key(&entry.to_string()) && food_data_map[k][&entry.to_string()] != ""  { %>
                                     <td class="prodval"><%= food_data_map[k][&entry.to_string()] %></td>
@@ -86,7 +114,7 @@
             <div class="pagebuttons">
                 <div class="prev">
                     <% if entries_cursor >= entries_per_page { %>
-                        <form action="/change">
+                        <form action="/scroll_list">
                             <input type="hidden" name="goto" value="down">
                             <input type="hidden" name="id" value="<%= rng %>">
                             <input type="submit" value="Prev page" class="submit">
@@ -94,12 +122,12 @@
                     <% } %>
                 </div>
                 <div class="foodcount">
-                    <p><%= &y.len() %> results</p>
-                    <p>Page <%= entries_cursor / entries_per_page + 1   %> / <%= y.len() / entries_per_page + 1 %></p>
+                    <p><%= &foods_to_show.len() %> results</p>
+                    <p>Page <%= entries_cursor / entries_per_page + 1   %> / <%= foods_to_show.len() / entries_per_page + 1 %></p>
                 </div>
                 <div class="next">
-                    <% if y.len() > entries_per_page && entries_cursor < y.len()-entries_per_page { %>
-                        <form action="/change" class="next">
+                    <% if foods_to_show.len() > entries_per_page && entries_cursor < foods_to_show.len()-entries_per_page { %>
+                        <form action="/scroll_list" class="next">
                             <input type="hidden" name="goto" value="up">
                             <input type="hidden" name="id" value="<%= rng %>">
                             <input type="submit" value="Next page" class="submit">
@@ -109,6 +137,6 @@
             </div>
         </div>
     </div>
-    <a href="/update/<%= rng %>" class="upd">Update</a>
+    <a href="/update?<%= rng %>" class="upd">Update</a>
   </body>
 </html>

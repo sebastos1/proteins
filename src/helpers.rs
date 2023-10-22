@@ -11,9 +11,7 @@ pub fn get_active_columns() -> Vec<String> {
 }
 
 pub fn load_dictionary<'a>() -> IndexMap<String, HashMap<String, String>> {
-    let map = serde_json::from_str(&std::fs::read_to_string("data/translations.json").unwrap()).unwrap();
-    // println!("{:?}", map);
-    map
+    serde_json::from_str(&std::fs::read_to_string("data/translations.json").unwrap()).unwrap()
 }
 
 pub fn convert_id<'a>() -> Vec<(&'a str, &'a str)> {

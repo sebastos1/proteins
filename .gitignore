@@ -1,5 +1,5 @@
 /target
 /util
-link.txt
+data/api_link.txt
 *.json
 !data/translations.json

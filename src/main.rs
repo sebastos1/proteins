@@ -17,11 +17,15 @@ use crate::templates::*;
 async fn main() {
     // food dictionary: id { unit, parent, order_pos, en, no }
     let dictionary = load_dictionary();
+    let language = Arc::new(Mutex::from(String::from("no")));
 
     // food data
-    let food_data_map = init().await;
-    let mut food_names: Vec<String> = food_data_map.clone().into_keys().collect();
-    food_names.sort_by_key(|name| name.to_lowercase());
+    let food_data_map = Arc::new(Mutex::new(load_data().await.unwrap()));
+    let food_names: Vec<String> = {
+        let map_guard = food_data_map.lock().unwrap();
+        map_guard.keys().cloned().collect()
+    };
+    let food_names = Arc::new(Mutex::new(food_names));
     let foods_currently_shown = Arc::new(Mutex::new(<Vec<String>>::new()));
     
     // ordering
@@ -39,37 +43,39 @@ async fn main() {
     let unique_id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
 
     let index = warp::path!().map({
+        let language = language.clone();
         let unique_id = unique_id.clone();
-        let entries_cursor = entries_cursor.clone();
-        let food_names = food_names.clone();
-        let currently_sorting_by = currently_sorting_by.clone();
         let dictionary = dictionary.clone();
-        let foods_currently_shown = foods_currently_shown.clone();
+        let food_names = food_names.clone();
         let food_data_map = food_data_map.clone();
         let active_columns = active_columns.clone();
+        let entries_cursor = entries_cursor.clone();
         let entries_per_page = entries_per_page.clone();
+        let currently_sorting_by = currently_sorting_by.clone();
         let show_column_settings = show_column_settings.clone();
+        let foods_currently_shown = foods_currently_shown.clone();
         move || {
             *unique_id.lock().unwrap() = rand::thread_rng().gen::<u32>();
             let foods_currently_shown = foods_currently_shown.lock().unwrap();
 
-            let y: Vec<String> = if !foods_currently_shown.is_empty() {
+            let foods_to_show: Vec<String> = if !foods_currently_shown.is_empty() {
                 foods_currently_shown.to_vec()
             } else {
-                food_names.clone()
+                food_names.lock().unwrap().clone()
             };
 
             html(
                 Index {
-                    y,
-                    food_data_map: food_data_map.clone(),
+                    foods_to_show,
+                    language: language.lock().unwrap().clone(),
                     dictionary: dictionary.clone(),
+                    food_data_map: food_data_map.lock().unwrap().clone(),
                     entries_per_page: entries_per_page.clone(),
-                    entries_cursor: *entries_cursor.lock().unwrap(),
-                    show_column_settings: *show_column_settings.lock().unwrap(),
                     rng: unique_id.lock().unwrap().to_string(),
-                    currently_sorting_by: currently_sorting_by.lock().unwrap().to_string(),
+                    entries_cursor: *entries_cursor.lock().unwrap(),
                     active_columns: active_columns.lock().unwrap().to_vec(),
+                    show_column_settings: *show_column_settings.lock().unwrap(),
+                    currently_sorting_by: currently_sorting_by.lock().unwrap().to_string(),
                 }
                 .render_once()
                 .unwrap(),
@@ -80,23 +86,21 @@ async fn main() {
     let search = warp::path!("search")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
-            let entries_cursor = entries_cursor.clone();
             let food_names = food_names.clone();
+            let entries_cursor = entries_cursor.clone();
             let foods_currently_shown = foods_currently_shown.clone();
             move |form: Vec<(String, String)>| {
                 *entries_cursor.lock().unwrap() = 0;
+                
+                let search_terms = form[0].1.split_whitespace().collect::<Vec<&str>>();
 
-                let mut valid: Vec<String> = Vec::new();
-                let search = form[0].1.split(" ").collect::<Vec<&str>>();
-                for item in &food_names {
-                    if search
-                        .iter()
-                        .all(|term| item.to_lowercase().contains(&term.to_lowercase()))
-                        && !valid.contains(item)
-                    {
-                        valid.push(item.to_string())
-                    }
-                }
+                let valid: Vec<String> = food_names.lock().unwrap().iter()
+                    .filter(|&item| {
+                        search_terms.iter().all(|term| item.to_lowercase().contains(term))
+                    })
+                    .cloned()
+                    .collect();
+
                 *foods_currently_shown.lock().unwrap() = valid;
                 warp::redirect(Uri::from_static("/"))
             }
@@ -105,49 +109,52 @@ async fn main() {
     let sort = warp::path!("sort")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
-            let entries_cursor = entries_cursor.clone();
             let food_names = food_names.clone();
-            let currently_sorting_by = currently_sorting_by.clone();
             let food_data_map = food_data_map.clone();
+            let entries_cursor = entries_cursor.clone();
+            let currently_sorting_by = currently_sorting_by.clone();
             let foods_currently_shown = foods_currently_shown.clone();
             move |form: Vec<(String, String)>| {
+                let sort_by = &form[0].1;
                 *entries_cursor.lock().unwrap() = 0;
-                let mut foods_currently_shown = foods_currently_shown.lock().unwrap();
-                let mut currently_sorting_by = currently_sorting_by.lock().unwrap();
 
-                let sort: Vec<String>;
-                let mut sorted: Vec<String> = Vec::new();
-                if foods_currently_shown.is_empty() {
-                    sort = food_names.clone();
-                } else {
-                    sort = (*foods_currently_shown.clone()).to_vec();
-                }
-
-                let mut collected: Vec<(String, u32)> = Vec::new();
-                for prod in &sort {
-                    if food_data_map[prod].contains_key(&form[0].1) && food_data_map[prod][&form[0].1] != "" {
-                        collected.push((
-                            prod.clone(),
-                            (food_data_map[prod][&form[0].1].trim().parse::<f32>().unwrap() * 100.) as u32,
-                        ));
+                let foods_to_sort = {
+                    let foods = foods_currently_shown.lock().unwrap();
+                    if foods.is_empty() {
+                        food_names.lock().unwrap().clone()
                     } else {
-                        collected.push((prod.clone(), 0. as u32))
-                    }
-                }
+                        foods.clone()
+                    }  
+                };
 
-                if form[0].1 != currently_sorting_by.to_string() {
-                    collected.sort_by(|a, b| b.1.cmp(&a.1));
-                    *currently_sorting_by = form[0].1.clone();
+                let mut currently_sorting_by = currently_sorting_by.lock().unwrap();
+                let descending = sort_by == &*currently_sorting_by;
+                if descending {
+                    *currently_sorting_by = format!("{sort_by} (asc.)");
                 } else {
-                    collected.sort_by(|a, b| a.1.cmp(&b.1));
-                    *currently_sorting_by = format!("{} (desc.)", form[0].1.clone());
+                    *currently_sorting_by = sort_by.clone();
                 }
 
-                for item in collected {
-                    sorted.push(item.0)
-                }
-                *foods_currently_shown = sorted.clone();
+                let food_data_map = food_data_map.lock().unwrap();
+                let mut sorted_tuples: Vec<(String, u32)> = foods_to_sort.iter()
+                    .map(|prod| {
+                        let binding = "".to_string();
+                        let value = food_data_map[prod].get(sort_by).unwrap_or(&binding);
+                        let num_value = value.trim().parse::<f32>().unwrap_or(0.0) * 100.0;
+                        (prod.clone(), num_value as u32)
+                    })
+                    .collect();
 
+                sorted_tuples.sort_by(|a, b| {
+                    if descending {
+                        a.1.cmp(&b.1)                        
+                    } else {
+                        b.1.cmp(&a.1)
+                    }
+                });
+
+                let sorted: Vec<String> = sorted_tuples.into_iter().map(|(name, _)| name).collect();
+                *foods_currently_shown.lock().unwrap() = sorted;
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -155,45 +162,46 @@ async fn main() {
     let show_column_settings = warp::path!("columns").map({
         let show_column_settings = show_column_settings.clone();
         move || {
-            let lol = *show_column_settings.lock().unwrap();
-            if lol == false {
-                *show_column_settings.lock().unwrap() = true
+            if *show_column_settings.lock().unwrap() {
+                *show_column_settings.lock().unwrap() = false;
             } else {
-                *show_column_settings.lock().unwrap() = false
+                *show_column_settings.lock().unwrap() = true;
             }
             warp::redirect(Uri::from_static("/"))
         }
     });
+
     let column = warp::path!("column")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let active_columns = active_columns.clone();
             move |form: Vec<(String, String)>| {
-                let mut new = Vec::<String>::new();
-                for (item, _) in &form[1..] {
-                    new.push(item.to_string());
-                }
-                *active_columns.lock().unwrap() = new;
+                let new_columns: Vec<String> = form.into_iter()
+                    .skip(1)
+                    .map(|(item, _)| item)
+                    .collect();
+                *active_columns.lock().unwrap() = new_columns;
                 warp::redirect(Uri::from_static("/"))
             }
         });
 
-    let change = warp::path!("change")
+    let scroll_list = warp::path!("scroll_list")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let entries_cursor = entries_cursor.clone();
             move |form: Vec<(String, String)>| {
-                let val = *entries_cursor.lock().unwrap();
+                let mut cursor = entries_cursor.lock().unwrap();
                 if form[0].1 == "up" {
-                    *entries_cursor.lock().unwrap() = val + entries_per_page;
-                } else if val >= entries_per_page {
-                    *entries_cursor.lock().unwrap() = val - entries_per_page;
+                    *cursor += entries_per_page;
+                } else if *cursor >= entries_per_page {
+                    *cursor -= entries_per_page;
                 }
                 warp::redirect(Uri::from_static("/"))
             }
         });
 
     let product = warp::path("product").and(warp::path::param()).map({
+        let language = language.clone();
         let dictionary = dictionary.clone();
         let food_data_map = food_data_map.clone();
         move |product: String| {
@@ -201,7 +209,8 @@ async fn main() {
                 More {
                     multiplier: 1.0,
                     dictionary: dictionary.clone(),
-                    food_data_map: food_data_map.clone(),
+                    language: language.lock().unwrap().clone(),
+                    food_data_map: food_data_map.lock().unwrap().clone(),
                     product: urlencoding::decode(&product).unwrap().to_string(),
                 }
                 .render_once()
@@ -213,6 +222,7 @@ async fn main() {
     let amount = warp::path!("amount")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
+            let language = language.clone();
             let unique_id = unique_id.clone();
             let dictionary = dictionary.clone();
             let food_data_map = food_data_map.clone();
@@ -221,8 +231,9 @@ async fn main() {
                 html(
                     More {
                         dictionary: dictionary.clone(),
-                        food_data_map: food_data_map.clone(),
                         product: form[0].1.to_string(),
+                        language: language.lock().unwrap().clone(),
+                        food_data_map: food_data_map.lock().unwrap().clone(),
                         multiplier: form[1].1.parse::<f32>().unwrap() / 100.,
                     }
                     .render_once()
@@ -238,7 +249,7 @@ async fn main() {
         move || {
             html(
                 Paper {
-                    food_data_map: food_data_map.clone(),
+                    food_data_map: food_data_map.lock().unwrap().clone(),
                     rng: unique_id.lock().unwrap().to_string(),
                     custom_meal_items: custom_meal_items.lock().unwrap().to_vec(),
                 }
@@ -258,20 +269,12 @@ async fn main() {
                 let multiplier = form[1].1.parse::<f32>().unwrap();
                 let mut custom_meal_items = custom_meal_items.lock().unwrap();
 
-                if custom_meal_items.is_empty() {
-                    custom_meal_items.push((form[0].1.clone(), multiplier));
+                if let Some((_, existing_multiplier)) = custom_meal_items.iter_mut().find(|(prod, _)| prod == &form[0].1) {
+                    *existing_multiplier += multiplier;
                 } else {
-                    let mut contains = false;
-                    for (i, (prod, mul)) in custom_meal_items.clone().iter().enumerate() {
-                        if prod == &form[0].1 {
-                            custom_meal_items[i].1 = mul + multiplier;
-                            contains = true;
-                        }
-                    }
-                    if contains == false {
-                        custom_meal_items.push((form[0].1.clone(), multiplier));
-                    }
+                    custom_meal_items.push((form[0].1.clone(), multiplier));
                 }
+
                 warp::redirect(Uri::from_static("/"))
             }
         });
@@ -297,7 +300,6 @@ async fn main() {
         }
     });
 
-    // submitting doesnt work yet, broken cause of the swap to dictionary
     let custom = warp::path("custom").map({
         let dictionary = dictionary.clone();
         move || {
@@ -311,6 +313,7 @@ async fn main() {
         }
     });
 
+    // todo, doesnt work
     let insert = warp::path!("insert")
         .and(warp::query::<Vec<(String, String)>>())
         .map({
@@ -326,40 +329,35 @@ async fn main() {
                 );
 
                 let mut food: HashMap<String, HashMap<String, String>>;
-                if std::path::Path::new("data/custom.json").exists()
-                    && std::fs::read_to_string("data/custom.json").unwrap() != ""
+                if std::path::Path::new(CUSTOM_PATH).exists()
+                    && std::fs::read_to_string(CUSTOM_PATH).unwrap() != ""
                 {
-                    food = serde_json::from_str(&std::fs::read_to_string("data/custom.json").unwrap())
+                    food = serde_json::from_str(&std::fs::read_to_string(CUSTOM_PATH).unwrap())
                         .unwrap();
                 } else {
                     food = HashMap::new();
                 }
                 food.insert(form[0].1.to_string(), nutrients);
-                let file = std::fs::File::create("data/custom.json").unwrap();
+                let file = std::fs::File::create(CUSTOM_PATH).unwrap();
                 serde_json::to_writer(file, &food).unwrap();
                 warp::redirect(Uri::from_static("/"))
             }
         });
 
-    let update_route = warp::path!("update").map({
-        move || {
-            let update_future = async {
-                match update().await {
-                    Ok(_) => {
-                        println!("[+] Updated!");
-                    }
-                    Err(e) => {
-                        println!("[-] Failed to update: {}", e);
-                    }
-                };
-                // requires rerun to refresh food items, too bad!
-            };
-            tokio::spawn(update_future);
-            warp::redirect(Uri::from_static("/"))
-        }
-    });
+    let toggle_lang = warp::path!("toggle_lang")
+        .map({
+            let language = language.clone();
+            move || {
+                if *language.lock().unwrap() == "no" {
+                    *language.lock().unwrap() = "en".to_string();
+                } else {
+                    *language.lock().unwrap() = "no".to_string();
+                }
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
 
-    // unused
+    // todo, not implemented for anything
     let error = warp::path!("error" / String).map(|error: String| {
         let decoded_error = match decode(&error) {
             Ok(decoded) => decoded.into_owned(),
@@ -376,6 +374,25 @@ async fn main() {
             .unwrap(),
         )
     });
+
+    let update_route = warp::path!("update").and_then({
+        let food_data_inner = food_data_map.clone();
+        move || {           
+            let food_data_clone = food_data_inner.clone();
+            async move {                
+                match update_food_data().await {
+                    Ok(new_data) => {                       
+                        let mut food_data_map = food_data_clone.lock().unwrap();                        
+                        *food_data_map = new_data;
+                    }
+                    Err(e) => {
+                        println!("[-] Failed to update: {}", e);
+                    }
+                };
+                Ok::<_, warp::Rejection>(warp::redirect(Uri::from_static("/")))
+            }
+        }
+    });
     
     println!("[+] Starting server at http://localhost:8000/...");
     let static_assets = warp::path("static").and(warp::fs::dir("static/"));
@@ -383,7 +400,7 @@ async fn main() {
         .or(index)
         .or(sort)
         .or(search)
-        .or(change)
+        .or(scroll_list)
         .or(column)
         .or(show_column_settings)
         .or(paper)
@@ -394,6 +411,7 @@ async fn main() {
         .or(amount)
         .or(custom)
         .or(insert)
+        .or(toggle_lang)
         .or(error)
         .or(update_route);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;

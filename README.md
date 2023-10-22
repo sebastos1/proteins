@@ -1,1 +1,1 @@
-![image](/image.png)
+![image](static/preview.png)

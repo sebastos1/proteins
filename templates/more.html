@@ -1,7 +1,19 @@
 <% include!("./header.html"); %>
+
+    <% let title = match language.as_str() {
+        "en" => {
+            if food_data_map[&product].contains_key("en") {
+                food_data_map[&product]["en"].clone()
+            } else {
+                product.clone()
+            }
+        },
+        _ => product.clone(),
+    }; %>
+
     <body>
         <a href="/">Table</a>
-        <h1><%= product %></h1>
+        <h1><%= title %></h1>
         <div class="buttons">
             <form action="/amount">
                 <input type="hidden" name="product" value="<%= product %>">
@@ -18,7 +30,12 @@
             <thead>
                 <tr>
                     <td>
-                        Næringsinnhold per <%= (format!("{:.1}", multiplier * 100.)).replace(".0", "") %> g
+                        <% if language == "en" { %>
+                            Nutrition facts per
+                        <% } else { %>
+                            Næringsinnhold per
+                        <% } %>
+                        <%= (format!("{:.1}", multiplier * 100.)).replace(".0", "") %> g
                     </td>
                     <td></td>
                 </tr>
@@ -28,7 +45,7 @@
                 <% if food_data_map[&product].contains_key(nutrient_id) { %>
                     <tr>
                         <% if vec!["protein", "fat", "carb"].contains(&&nutrient_id.as_str()) { %>
-                            <td><b><%= nutrient_dict_hashmap["no"] %></b></td>
+                            <td><b><%= nutrient_dict_hashmap[&language] %></b></td>
                         <% } else { %>
                             <td>
                             <% if nutrient_dict_hashmap["parent"] != "" { %>
@@ -39,7 +56,7 @@
                                 <% } %>
                             <% } %>
 
-                            <%= nutrient_dict_hashmap["no"] %></td>
+                            <%= nutrient_dict_hashmap[&language] %></td>
                         <% } %>
 
                         <% let prec: usize; %>

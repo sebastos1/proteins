@@ -10,6 +10,8 @@
     --grayed: #505050;
     --head: #181818;
 
+    --button-background: #4f4f4f;
+    --button-hover: #696969;
     --rounding: 15px;
 }
 
@@ -149,4 +151,30 @@ input[type="number"]::-webkit-inner-spin-button {
     column-count: 3;
     width: 90%;
     margin: auto;
+}
+
+.flag_button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    outline: none;
+    margin: 0;
+    padding: 0;
+}
+
+.flag_button img {
+    width: 40px;
+    height: auto;  
+    margin: 0;
+    padding: 0;
+    margin-right: 10px; 
+    margin-left: 5px; 
+}
+
+.flag_button h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 18px; 
+    margin-right:5px;
 }
