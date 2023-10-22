@@ -33,7 +33,7 @@ async fn main() {
 
     // scrolling
     let entries_cursor = Arc::new(Mutex::new(0));
-    let entries_per_page = 10;
+    let entries_per_page = Arc::new(Mutex::new(10));
 
     // columns
     let active_columns = Arc::new(Mutex::new(get_active_columns()));
@@ -41,6 +41,23 @@ async fn main() {
 
     let custom_meal_items = Arc::new(Mutex::new(<Vec<(String, f32)>>::new()));
     let unique_id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
+
+    let settings = warp::path("settings").map({
+        let language = language.clone();
+        let dictionary = dictionary.clone();
+        let entries_per_page = entries_per_page.clone();
+        move || {
+            html(
+                Settings {
+                    dictionary: dictionary.clone(),
+                    language: language.lock().unwrap().clone(),
+                    entries_per_page: *entries_per_page.lock().unwrap(),
+                }
+                .render_once()
+                .unwrap(),
+            )
+        }
+    });
 
     let index = warp::path!().map({
         let language = language.clone();
@@ -70,7 +87,7 @@ async fn main() {
                     language: language.lock().unwrap().clone(),
                     dictionary: dictionary.clone(),
                     food_data_map: food_data_map.lock().unwrap().clone(),
-                    entries_per_page: entries_per_page.clone(),
+                    entries_per_page: entries_per_page.lock().unwrap().clone(),
                     rng: unique_id.lock().unwrap().to_string(),
                     entries_cursor: *entries_cursor.lock().unwrap(),
                     active_columns: active_columns.lock().unwrap().to_vec(),
@@ -189,7 +206,9 @@ async fn main() {
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let entries_cursor = entries_cursor.clone();
+            let entries_per_page = entries_per_page.clone();
             move |form: Vec<(String, String)>| {
+                let entries_per_page = *entries_per_page.lock().unwrap();
                 let mut cursor = entries_cursor.lock().unwrap();
                 if form[0].1 == "up" {
                     *cursor += entries_per_page;
@@ -413,6 +432,7 @@ async fn main() {
         .or(insert)
         .or(toggle_lang)
         .or(error)
+        .or(settings)
         .or(update_route);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

@@ -137,12 +137,10 @@ input[type="number"]::-webkit-inner-spin-button {
     margin-left:0;
 }
 
-
 /* Product */
 .detable {
     margin-top: 60px;
 }
-
 
 /* Custom */
 .inserts { 
@@ -177,4 +175,34 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 0;
     font-size: 18px; 
     margin-right:5px;
+}
+
+.rdi_builder div {
+    width: 75%;
+    display: flex;
+    align-items: center;
+}
+
+.rdi_item h4 {
+    flex-grow: 1;
+    margin-right: 10px; /* Optional: Add some spacing between the h4 and the input */
+}
+
+.rdi_item select {
+    flex-grow: 1;
+    margin-right: 10px; /* Optional: Add some spacing between the h4 and the input */
+}
+
+.rdi_builder input {
+    width:25%;
+}
+
+summary input {
+    background-color: var(--bg);
+    color: red;
+}
+
+details input {
+    background-color: var(--bg);
+    color: blue;
 }

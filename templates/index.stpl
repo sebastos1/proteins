@@ -2,6 +2,10 @@
   <body class="indexbody">
     <div class="mayn">
         <div class="buttons">
+            <form action="/settings">
+                <input type="submit" value="Settings" />
+            </form>
+            
             <form action="/custom">
                 <input type="submit" value="Add product" />
             </form>
@@ -39,10 +43,6 @@
                     <form action="column">
                         <input type="hidden" name="id" value="<%= rng %>">
                         <% for (nutrient_id, nutrient_map) in &dictionary { %>
-                            <% if nutrient_map["parent"] != "" { %>
-                                <% continue; %>
-                            <% } %>
-
                             <b><%= nutrient_map[&language] %>:</b>
                             <input class="tick" type="checkbox" name="<%= nutrient_id %>"
                             <% if active_columns.contains(&nutrient_id.to_string()) { %>

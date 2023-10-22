@@ -220,7 +220,7 @@
         "unit": "g",
         "no": "Fiber",
         "en": "Fiber",
-        "parent": "",
+        "parent": "carb",
         "type": "submacronutrient"
     },
     "protein": {

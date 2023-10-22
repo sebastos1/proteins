@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 
 #[derive(TemplateOnce)]
-#[template(path = "index.html")]
+#[template(path = "index.stpl")]
 pub struct Index {
     pub rng: String,
     pub language: String,
@@ -18,7 +18,7 @@ pub struct Index {
 }
 
 #[derive(TemplateOnce)]
-#[template(path = "more.html")]
+#[template(path = "more.stpl")]
 pub struct More {
     pub product: String,
     pub multiplier: f32,
@@ -28,7 +28,7 @@ pub struct More {
 }
 
 #[derive(TemplateOnce)]
-#[template(path = "paper.html")]
+#[template(path = "paper.stpl")]
 pub struct Paper {
     pub rng: String,
     pub custom_meal_items: Vec<(String, f32)>,
@@ -36,13 +36,21 @@ pub struct Paper {
 }
 
 #[derive(TemplateOnce)]
-#[template(path = "custom.html")]
+#[template(path = "custom.stpl")]
 pub struct Custom {
     pub dictionary: IndexMap<String, HashMap<String, String>>,
 }
 
 #[derive(TemplateOnce)]
-#[template(path = "error.html")]
+#[template(path = "settings.stpl")]
+pub struct Settings {
+    pub language: String,
+    pub entries_per_page: usize,
+    pub dictionary: IndexMap<String, HashMap<String, String>>,
+}
+
+#[derive(TemplateOnce)]
+#[template(path = "error.stpl")]
 pub struct ErrorHtml {
     pub error: String,
 }
