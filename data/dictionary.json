@@ -1,0 +1,401 @@
+{
+    "kJ": {
+        "unit": "kJ",
+        "no": "kJ",
+        "en": "kJ",
+        "parent": "",
+        "type": "misc"
+    },
+    "kcal": {
+        "unit": "kcal",
+        "no": "kcal",
+        "en": "kcal",
+        "parent": "",
+        "type": "misc"
+    },
+    "edible_part": {
+        "unit": "g",
+        "no": "Spiselig del",
+        "en": "Edible part",
+        "parent": "",
+        "type": "misc"
+    },
+    "water": {
+        "unit": "g",
+        "no": "Vann",
+        "en": "Water",
+        "parent": "",
+        "type": "misc"
+    },
+    "fat": {
+        "unit": "g",
+        "no": "Fett",
+        "en": "Fat",
+        "parent": "",
+        "type": "macronutrient"
+    },
+    "saturated_fat": {
+        "unit": "g",
+        "no": "Mettet fett",
+        "en": "Saturated fat",
+        "parent": "fat",
+        "type": "submacronutrient"
+    },
+    "lauric_acid": {
+        "unit": "g",
+        "no": "Laurinsyre (C12:0)",
+        "en": "Lauric acid (C12:0)",
+        "parent": "saturated_fat",
+        "type": "submacronutrient"
+    },
+    "myristic_acid": {
+        "unit": "g",
+        "no": "Myristinsyre (C14:0)",
+        "en": "Myristic acid (C14:0)",
+        "parent": "saturated_fat",
+        "type": "submacronutrient"
+    },
+    "palmitic_acid": {
+        "unit": "g",
+        "no": "Palmitinsyre (C16:0)",
+        "en": "Palmitic acid (C16:0)",
+        "parent": "saturated_fat",
+        "type": "submacronutrient"
+    },
+    "stearic_acid": {
+        "unit": "g",
+        "no": "Stearinsyre (C18:0)",
+        "en": "Stearic acid (C18:0)",
+        "parent": "saturated_fat",
+        "type": "submacronutrient"
+    },
+    "trans": {
+        "unit": "g",
+        "no": "Transfett",
+        "en": "Trans fat",
+        "parent": "fat",
+        "type": "submacronutrient"
+    },
+    "monounsat_fat": {
+        "unit": "g",
+        "no": "Enumettet fett",
+        "en": "Monosaturated fat",
+        "parent": "fat",
+        "type": "submacronutrient"
+    },
+    "C16:1": {
+        "unit": "g",
+        "no": "C16:1 sum",
+        "en": "C16:1 sum",
+        "parent": "monounsat_fat",
+        "type": "submacronutrient"
+    },
+    "C18:1": {
+        "unit": "g",
+        "no": "C18:1 sum",
+        "en": "C18:1 sum",
+        "parent": "monounsat_fat",
+        "type": "submacronutrient"
+    },
+    "polyunsat_fat": {
+        "unit": "g",
+        "no": "Flerumettet fett",
+        "en": "Polyunsaturated fat",
+        "parent": "fat",
+        "type": "submacronutrient"
+    },
+    "poly_1": {
+        "unit": "g",
+        "no": "Linolsyre (C18:2n-6)",
+        "en": "Linoleic acid (C18:2n-6)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_2": {
+        "unit": "g",
+        "no": "Alfalinolensyre (C18:3n-3)",
+        "en": "Alfalinolenic acid (C18:3n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_3": {
+        "unit": "g",
+        "no": "Eikosatriensyre (C20:3n-3)",
+        "en": "Eicosatriene acid (C20:3n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_4": {
+        "unit": "g",
+        "no": "Dihomogammalinolensyre (C20:3n-6)",
+        "en": "Dihomo-γ-linolenic acid (C20:3n-6)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_5": {
+        "unit": "g",
+        "no": "Eikosatetraensyre (C20:4n-3)",
+        "en": "Eicosatetraenoic acid (C20:4n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_6": {
+        "unit": "g",
+        "no": "Arakidonsyre (C20:4n-6)",
+        "en": "Arachidonic acid (C20:4n-6)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_7": {
+        "unit": "g",
+        "no": "Eikosapentaensyre (C20:5n-3)",
+        "en": "Eicosapentaenoic acid (C20:5n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_8": {
+        "unit": "g",
+        "no": "Dokosapentaensyre (C22:5n-3)",
+        "en": "Docosapentaenoic acid (C22:5n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "poly_9": {
+        "unit": "g",
+        "no": "Dokosaheksaensyre (C22:6n-3)",
+        "en": "Docosahexaenoic acid (C22:6n-3)",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "omega3": {
+        "unit": "g",
+        "no": "Omega-3",
+        "en": "Omega-3",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "omega6": {
+        "unit": "g",
+        "no": "Omega-6",
+        "en": "Omega-6",
+        "parent": "polyunsat_fat",
+        "type": "submacronutrient"
+    },
+    "cholesterol": {
+        "unit": "mg",
+        "no": "Kolesterol",
+        "en": "Cholesterol",
+        "parent": "fat",
+        "type": "submacronutrient"
+    },
+    "carb": {
+        "unit": "g",
+        "no": "Karbohydrater",
+        "en": "Carbohydrates",
+        "parent": "",
+        "type": "macronutrient"
+    },
+    "starch": {
+        "unit": "g",
+        "no": "Stivelse",
+        "en": "Starch",
+        "parent": "carb",
+        "type": "submacronutrient"
+    },
+    "mono+di": {
+        "unit": "g",
+        "no": "Mono- & disakkarider",
+        "en": "Mono- & disaccharides",
+        "parent": "carb",
+        "type": "submacronutrient"
+    },
+    "sugar": {
+        "unit": "g",
+        "no": "Sukkerarter",
+        "en": "Sugars",
+        "parent": "carb",
+        "type": "submacronutrient"
+    },
+    "fiber": {
+        "unit": "g",
+        "no": "Fiber",
+        "en": "Fiber",
+        "parent": "carb",
+        "type": "submacronutrient"
+    },
+    "protein": {
+        "unit": "g",
+        "no": "Protein",
+        "en": "Protein",
+        "parent": "",
+        "type": "macronutrient"
+    },
+    "salt": {
+        "unit": "g",
+        "no": "Salt",
+        "en": "Salt",
+        "parent": "",
+        "type": "mineral"
+    },
+    "alcohol": {
+        "unit": "g",
+        "no": "Alkohol",
+        "en": "Alcohol",
+        "parent": "",
+        "type": "misc"
+    },
+    "vit_a": {
+        "unit": "μg",
+        "no": "Vit A",
+        "en": "Vit A",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "retinol": {
+        "unit": "μg",
+        "no": "Retinol",
+        "en": "Retinol",
+        "parent": "vit_a",
+        "type": "vitamin"
+    },
+    "beta_carotene": {
+        "unit": "μg",
+        "no": "Betakaroten",
+        "en": "Beta-carotene",
+        "parent": "vit_a",
+        "type": "vitamin"
+    },
+    "vit_d": {
+        "unit": "μg",
+        "no": "Vit D",
+        "en": "Vit D",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_e": {
+        "unit": "mg",
+        "no": "Vit E",
+        "en": "Vit E",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_b1": {
+        "unit": "mg",
+        "no": "Thiamin (B1)",
+        "en": "Thiamine (B1)",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_b2": {
+        "unit": "mg",
+        "no": "Riboflavin (B2)",
+        "en": "Riboflavin (B2)",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_b3": {
+        "unit": "mg",
+        "no": "Niacin (B3)",
+        "en": "Niacin (B3)",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_b6": {
+        "unit": "mg",
+        "no": "Vit B6",
+        "en": "Vit B6",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "folate": {
+        "unit": "μg",
+        "no": "Folat (B9)",
+        "en": "Folate (B9)",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_b12": {
+        "unit": "μg",
+        "no": "Vit B12",
+        "en": "Vit B12",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "vit_c": {
+        "unit": "mg",
+        "no": "Vit C",
+        "en": "Vit C",
+        "parent": "",
+        "type": "vitamin"
+    },
+    "ca": {
+        "unit": "mg",
+        "no": "Kalsium",
+        "en": "Calcium",
+        "parent": "",
+        "type": "mineral"
+    },
+    "fe": {
+        "unit": "mg",
+        "no": "Jern",
+        "en": "Iron",
+        "parent": "",
+        "type": "mineral"
+    },
+    "na": {
+        "unit": "mg",
+        "no": "Natrium",
+        "en": "Sodium",
+        "parent": "",
+        "type": "mineral"
+    },
+    "k": {
+        "unit": "mg",
+        "no": "Kalium",
+        "en": "Potassium",
+        "parent": "",
+        "type": "mineral"
+    },
+    "mg": {
+        "unit": "mg",
+        "no": "Magnesium",
+        "en": "Magnesium",
+        "parent": "",
+        "type": "mineral"
+    },
+    "zn": {
+        "unit": "mg",
+        "no": "Sink",
+        "en": "Zinc",
+        "parent": "",
+        "type": "mineral"
+    },
+    "se": {
+        "unit": "μg",
+        "no": "Selenium",
+        "en": "Selenium",
+        "parent": "",
+        "type": "mineral"
+    },
+    "cu": {
+        "unit": "mg",
+        "no": "Kobber",
+        "en": "Copper",
+        "parent": "",
+        "type": "mineral"
+    },
+    "p": {
+        "unit": "mg",
+        "no": "Fosfor",
+        "en": "Phosphorus",
+        "parent": "",
+        "type": "mineral"
+    },
+    "i": {
+        "unit": "μg",
+        "no": "Jod",
+        "en": "Iodine",
+        "parent": "",
+        "type": "mineral"
+    }
+}

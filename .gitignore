@@ -2,4 +2,4 @@
 /util
 data/api_link.txt
 *.json
-!data/translations.json
+!data/dictionary.json
