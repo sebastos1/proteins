@@ -3,88 +3,63 @@
         <a href="/">Table</a>
         <h2>Settings</h2>
         <h3>Entries per page</h3>
+        
         <form action="/entries_per_page">
             <div class="inserts">
                 <input type="text" name="Name" value="" placeholder="<%= entries_per_page %>">
+                <input type="hidden" name=rng value="<%= rng %>">
                 <input type="submit" value="Submit">
             </div>
         </form>
+        
         <h3>RDI</h3>
         <p>RDI data here</p>
 
-        <select>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-        </select>
-
-
+        <% if !rdis.is_empty() { %>
+            <select>
+                <option value="placeholder">Choose a preset</option>
+                <% for preset_name in rdis.keys() { %>
+                    <option value="<%= preset_name %>"><%= preset_name %></option>
+                <% } %>
+            </select>
+        <% } %>
 
         <h3>New RDI preset</h3>
         <p>All fields are optional - if left blank, it will be ignored.</p>
 
-
-
-        <%# courtesy of mr gpt %>
-        
-        <form action="/add_new_rdi_preset">
-            <div class="rdi_builder">
-                <% for (nutrient_id, nutrient_map) in &dictionary {
-                    if nutrient_map["parent"].as_str() == "" && !["energy", "misc"].contains(&nutrient_map["type"].as_str()) { 
-                        let has_children = dictionary.values().any(|item| item["parent"].as_str() == nutrient_id);
-                        if has_children { %>
-                            <details class="rdi_item">
-                                <summary>
-                                    <%= nutrient_map[&language] %>
-                                    <input type="number" step="any" name="<%= nutrient_id %>" value="" style="float:right;">
-                                </summary>
-                                <% for (child_id, child_map) in &dictionary {
-                                    if child_map["parent"].as_str() == nutrient_id {
-                                        let has_subchildren = dictionary.values().any(|item| item["parent"].as_str() == child_id);
-                                        if has_subchildren { %>
-                                            <details class="rdi_item">
-                                                <summary>
-                                                    <%= child_map[&language] %>
-                                                    <input type="number" step="any" name="<%= child_id %>" value="" style="float:right;">
-                                                </summary>
-                                                <% for (subchild_id, subchild_map) in &dictionary {
-                                                    if subchild_map["parent"].as_str() == child_id { %>
-                                                        <div class="rdi_item">
-                                                            <h4><%= subchild_map[&language] %></h4>
-                                                            <input type="number" step="any" name="<%= subchild_id %>" value="" style="float:right;">
-                                                        </div>
-                                                    <% } %>
-                                                <% } %>
-                                            </details>
-                                        <% } else { %>
-                                            <div class="rdi_item">
-                                                <h4><%= child_map[&language] %></h4>
-                                                <input type="number" step="any" name="<%= child_id %>" value="" style="float:right;">
-                                            </div>
+        <form action="/add_rdi_preset">
+            <input type="text" name="name" placeholder="Preset name">
+            <table>
+                <% for (nutrient_id, nutrient_dict_hashmap) in &dictionary { %>
+                    <% if nutrient_dict_hashmap["type"] != "energy" && nutrient_dict_hashmap["type"] != "misc" { %>
+                        <tr>
+                            <td class="rdi_table_nutrient">
+                                <% if vec!["protein", "fat", "carb"].contains(&nutrient_id.as_str()) { %>
+                                    <b><%= nutrient_dict_hashmap[&language] %></b>
+                                <% } else { %>
+                                    <% if nutrient_dict_hashmap["parent"] != "" { %>
+                                        &nbsp;&nbsp;
+                                        <% if dictionary[&nutrient_dict_hashmap["parent"]]["parent"] != "" { %>
+                                            &nbsp;&nbsp;
                                         <% } %>
                                     <% } %>
+                                    <%= nutrient_dict_hashmap[&language] %>
                                 <% } %>
-                            </details>
-                        <% } else { %>
-                            <div class="rdi_item">
-                                <h4><%= nutrient_map[&language] %></h4>
-                                <input type="number" step="any" name="<%= nutrient_id %>" value="" style="float:right;">
-                            </div>
-                        <% } %>
+                            </td>
+                            
+                            <td class="rdi_table_input">
+                                <input type="number" step="0.1" name="<%= nutrient_id %>">
+                            </td>
+
+                            <td class="rdi_table_unit">
+                                <%= nutrient_dict_hashmap["unit"] %>
+                            </td>
+                        </tr>
                     <% } %>
                 <% } %>
-                <input type="submit" value="Submit">
-            </div>
+            </table>
+            <button type="submit">Add preset</button>
         </form>
-
-
-
-
-
-
-
-
-
 
     </body>
 </html>

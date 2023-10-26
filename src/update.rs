@@ -3,11 +3,8 @@ use tokio::fs::File;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use std::collections::HashMap;
-use crate::helpers::convert_id;
+use crate::helpers::{convert_id, RDI_PATH, FOOD_PATH, CUSTOM_PATH, API_PATH};
 
-pub const FOOD_PATH: &str = "data/food.json";
-pub const CUSTOM_PATH: &str = "data/custom.json";
-pub const API_PATH: &str = "data/api_link.txt";
 
 pub async fn load_data() -> Result<HashMap<String, HashMap<String, String>>, String> {
     let file_content = std::fs::read_to_string(FOOD_PATH).map_err(|_| "[-] Bad data, creating new ...".to_string())?;
@@ -137,4 +134,11 @@ fn set_api_key_language(api_key: String, norwegian: bool) -> String {
 fn read_api_key(link_path: &str) -> Result<String, String> {
     let file_content = std::fs::read_to_string(link_path).map_err(|_| "[-] Failed to read API key.".to_string())?;
     Ok(file_content)
+}
+
+pub async fn update_rdis(rdis: HashMap<String, HashMap<String, String>>) {
+    let serialized = serde_json::to_string(&rdis).expect("Failed to serialize");
+    let mut file = File::create(RDI_PATH).await.unwrap();
+    file.write_all(serialized.as_bytes()).await.unwrap();
+    println!("[+] RDI data updated!");
 }

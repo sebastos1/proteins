@@ -15,6 +15,9 @@ use crate::templates::*;
 
 #[tokio::main]
 async fn main() {
+    let rdis = Arc::new(Mutex::from(load_rdis()));
+    println!("RDI: {:?}", rdis);
+
     // food dictionary: id { unit, parent, order_pos, en, no }
     let dictionary = load_dictionary();
     let language = Arc::new(Mutex::from(String::from("no")));
@@ -43,14 +46,18 @@ async fn main() {
     let unique_id = Arc::new(Mutex::new(rand::thread_rng().gen::<u32>()));
 
     let settings = warp::path("settings").map({
+        let rdis = rdis.clone();
         let language = language.clone();
+        let unique_id = unique_id.clone();
         let dictionary = dictionary.clone();
         let entries_per_page = entries_per_page.clone();
         move || {
             html(
                 Settings {
                     dictionary: dictionary.clone(),
+                    rdis: rdis.lock().unwrap().clone(),
                     language: language.lock().unwrap().clone(),
+                    rng: unique_id.lock().unwrap().to_string(),
                     entries_per_page: *entries_per_page.lock().unwrap(),
                 }
                 .render_once()
@@ -58,6 +65,49 @@ async fn main() {
             )
         }
     });
+
+    let update_entries_per_page = warp::path!("entries_per_page")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let entries_per_page = entries_per_page.clone();
+            move |form: Vec<(String, String)>| {
+                let new_entries_per_page = form[0].1.parse::<usize>().unwrap();
+                *entries_per_page.lock().unwrap() = new_entries_per_page;
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+        
+    let add_rdi_preset = warp::path!("add_rdi_preset")
+        .and(warp::query::<Vec<(String, String)>>())
+        .map({
+            let rdis = rdis.clone();
+            move |form: Vec<(String, String)>| {
+                let mut rdis = rdis.lock().unwrap();
+    
+                let mut preset_name = form[0].1.to_string();
+                if preset_name.is_empty() {
+                    preset_name = (1..)
+                        .map(|i| format!("preset{}", i))
+                        .find(|name| !rdis.contains_key(name))
+                        .unwrap_or_else(|| "preset1".to_string()); // This is just a fallback; it should never be reached.
+                }
+                // check if preset name already exists todo
+
+    
+                let new_rdis: HashMap<String, String> = form.iter()
+                    .filter(|(_, v)| !v.is_empty())
+                    .map(|(k, v)| (k.to_string(), v.to_string()))
+                    .collect();
+    
+                println!("Inserting {:?}", new_rdis);
+                rdis.insert(preset_name, new_rdis);
+    
+                tokio::spawn(update_rdis(rdis.clone()));
+    
+                warp::redirect(Uri::from_static("/"))
+            }
+        });
+    
 
     let index = warp::path!().map({
         let language = language.clone();
@@ -242,11 +292,9 @@ async fn main() {
         .and(warp::query::<Vec<(String, String)>>())
         .map({
             let language = language.clone();
-            let unique_id = unique_id.clone();
             let dictionary = dictionary.clone();
             let food_data_map = food_data_map.clone();
             move |form: Vec<(String, String)>| {
-                *unique_id.lock().unwrap() = rand::thread_rng().gen::<u32>();
                 html(
                     More {
                         dictionary: dictionary.clone(),
@@ -433,6 +481,8 @@ async fn main() {
         .or(toggle_lang)
         .or(error)
         .or(settings)
+        .or(update_entries_per_page)
+        .or(add_rdi_preset)
         .or(update_route);
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

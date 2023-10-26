@@ -19,7 +19,7 @@ body {background-color: var(--bg)}
 thead, tfoot {background-color: var(--head)}
 table > tbody > tr {background-color: var(--bg2)}
 table > tbody > tr:nth-child(even) {background-color: var(--bg3)}
-button {background-color: var(--bg)}
+button {background-color: var(--button-background)}
 
 input[type="number"] {
     -moz-appearance: textfield;
@@ -177,32 +177,23 @@ input[type="number"]::-webkit-inner-spin-button {
     margin-right:5px;
 }
 
-.rdi_builder div {
-    width: 75%;
-    display: flex;
-    align-items: center;
+.rdi_table_nutrient {
+    width: 80%;
+    text-align: left;
+    vertical-align: middle;
 }
 
-.rdi_item h4 {
-    flex-grow: 1;
-    margin-right: 10px; /* Optional: Add some spacing between the h4 and the input */
+.rdi_table_input input {
+    width: 70%;
+    vertical-align: middle;
 }
 
-.rdi_item select {
-    flex-grow: 1;
-    margin-right: 10px; /* Optional: Add some spacing between the h4 and the input */
+.rdi_table_unit {
+    vertical-align: middle;
+    width: 4%;
 }
 
-.rdi_builder input {
-    width:25%;
-}
-
-summary input {
-    background-color: var(--bg);
-    color: red;
-}
-
-details input {
-    background-color: var(--bg);
-    color: blue;
+.inline-buttons {
+    display: inline-block;
+    vertical-align: middle;
 }

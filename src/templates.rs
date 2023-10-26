@@ -44,8 +44,10 @@ pub struct Custom {
 #[derive(TemplateOnce)]
 #[template(path = "settings.stpl")]
 pub struct Settings {
+    pub rng: String,
     pub language: String,
     pub entries_per_page: usize,
+    pub rdis: HashMap<String, HashMap<String, String>>,
     pub dictionary: IndexMap<String, HashMap<String, String>>,
 }
 
